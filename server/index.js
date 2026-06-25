@@ -25,6 +25,32 @@ async function fetchHtml(url) {
   }
 }
 
+// Scrape live rates directly from GRT Jewellers (primary baseline)
+async function scrapeGrtRates() {
+  const url = 'https://www.grtjewels.com/';
+  const html = await fetchHtml(url);
+  if (!html) return null;
+
+  try {
+    const rate22kMatch = /\{\\"type\\":\\"GOLD\\",\\"weight\\":1,\\"unit\\":\\"G\\",\\"purity\\":\\"22 KT\\",\\"amount\\":(\d+)/.exec(html);
+    const rate24kMatch = /\{\\"type\\":\\"GOLD\\",\\"weight\\":1,\\"unit\\":\\"G\\",\\"purity\\":\\"24 KT\\",\\"amount\\":(\d+)/.exec(html);
+    const rate18kMatch = /\{\\"type\\":\\"GOLD\\",\\"weight\\":1,\\"unit\\":\\"G\\",\\"purity\\":\\"18 KT\\",\\"amount\\":(\d+)/.exec(html);
+
+    if (rate22kMatch && rate24kMatch) {
+      return {
+        gold24k: parseInt(rate24kMatch[1], 10),
+        gold22k: parseInt(rate22kMatch[1], 10),
+        gold18k: rate18kMatch ? parseInt(rate18kMatch[1], 10) : Math.round(parseInt(rate24kMatch[1], 10) * (18 / 24)),
+        timestamp: new Date().toISOString(),
+        source: 'GRT Jewellers Website (Direct)'
+      };
+    }
+  } catch (error) {
+    console.error('Failed to parse GRT jewellers direct rates:', error.message);
+  }
+  return null;
+}
+
 // Scrape Chennai Gold rates from GoodReturns
 async function scrapeChennaiRates() {
   const url = 'https://www.goodreturns.in/gold-rates/chennai.html';
@@ -189,7 +215,8 @@ app.get('/api/rates', async (req, res) => {
   ]);
 
   // 2. Attempt scraping
-  const [chennaiScraped, dubaiScraped, silverScraped] = await Promise.all([
+  const [grtDirect, chennaiScraped, dubaiScraped, silverScraped] = await Promise.all([
+    scrapeGrtRates(),
     scrapeChennaiRates(),
     scrapeDubaiRates(),
     scrapeChennaiSilverRate()
@@ -202,7 +229,8 @@ app.get('/api/rates', async (req, res) => {
 
   const calculated = calculateRatesFromSpot(spotPrice, inrRate, aedRate);
 
-  const finalChennai = chennaiScraped || calculated.chennai;
+  // Establish primary baseline: GRT Direct -> GoodReturns Scraped -> Calculated Spot
+  const finalChennai = grtDirect || chennaiScraped || calculated.chennai;
   const finalDubai = dubaiScraped || calculated.dubai;
   
   // Compute silver rate
@@ -229,15 +257,15 @@ app.get('/api/rates', async (req, res) => {
     },
     grt: {
       name: 'GRT Jewellers',
-      gold24k: base24k + 5,
-      gold22k: base22k + 5,
-      gold18k: base18k + 5,
-      premium: 5,
+      gold24k: base24k,
+      gold22k: base22k,
+      gold18k: base18k,
+      premium: 0,
       description: 'Traditional South Indian patterns and transparent rates'
     },
     lalitha: {
       name: 'Lalitha Jewellery',
-      gold24k: base24k, // exact association base rate
+      gold24k: base24k, // exact same base rate
       gold22k: base22k,
       gold18k: base18k,
       premium: 0,
@@ -245,42 +273,42 @@ app.get('/api/rates', async (req, res) => {
     },
     atr: {
       name: 'ATR Jewellers',
-      gold24k: base24k + 15,
-      gold22k: base22k + 15,
-      gold18k: base18k + 10,
-      premium: 15,
-      description: 'Local boutique jewelry with hand-crafted custom designs'
-    },
-    kalyan: {
-      name: 'Kalyan Jewellers',
-      gold24k: base24k + 30,
-      gold22k: base22k + 30,
-      gold18k: base18k + 25,
-      premium: 30,
-      description: 'National presence with designer and bridal collections'
-    },
-    joyalukkas: {
-      name: 'Joyalukkas',
-      gold24k: base24k + 25,
-      gold22k: base22k + 25,
-      gold18k: base18k + 20,
-      premium: 25,
-      description: 'World-renowned collections and global standard retail rate'
-    },
-    malabar: {
-      name: 'Malabar Gold & Diamonds',
-      gold24k: base24k + 20,
-      gold22k: base22k + 20,
-      gold18k: base18k + 15,
-      premium: 20,
-      description: 'Responsible sourcing and certified 916 purity assurances'
-    },
-    avr: {
-      name: 'AVR Swarna Mahal',
       gold24k: base24k + 10,
       gold22k: base22k + 10,
       gold18k: base18k + 8,
       premium: 10,
+      description: 'Local boutique jewelry with hand-crafted custom designs'
+    },
+    kalyan: {
+      name: 'Kalyan Jewellers',
+      gold24k: base24k + 25,
+      gold22k: base22k + 25,
+      gold18k: base18k + 20,
+      premium: 25,
+      description: 'National presence with designer and bridal collections'
+    },
+    joyalukkas: {
+      name: 'Joyalukkas',
+      gold24k: base24k + 20,
+      gold22k: base22k + 20,
+      gold18k: base18k + 15,
+      premium: 20,
+      description: 'World-renowned collections and global standard retail rate'
+    },
+    malabar: {
+      name: 'Malabar Gold & Diamonds',
+      gold24k: base24k + 15,
+      gold22k: base22k + 15,
+      gold18k: base18k + 10,
+      premium: 15,
+      description: 'Responsible sourcing and certified 916 purity assurances'
+    },
+    avr: {
+      name: 'AVR Swarna Mahal',
+      gold24k: base24k + 5,
+      gold22k: base22k + 5,
+      gold18k: base18k + 4,
+      premium: 5,
       description: 'Regional brand popular in Tamil Nadu for high-finish details'
     }
   };
