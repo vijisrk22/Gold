@@ -1,0 +1,6 @@
+{
+  "appId": "com.aurumlive.app",
+  "appName": "Aurum Live",
+  "webDir": "frontend/dist",
+  "bundledWebRuntime": false
+}
