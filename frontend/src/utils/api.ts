@@ -274,9 +274,22 @@ export const fetchGoldRates = async (): Promise<GoldRatesPayload> => {
     return getFallbackRates(overrides);
   }
 
+  const getApiUrl = () => {
+    if (window.location.port === '5173') {
+      return 'http://localhost:5000/api/rates';
+    }
+    // Mobile/native container check (runs on localhost or file:// protocol without dev ports)
+    if (
+      (window.location.origin.includes('localhost') && window.location.port !== '5000') ||
+      window.location.protocol === 'file:'
+    ) {
+      return 'https://goldrate.azurewebsites.net/api/rates';
+    }
+    return '/api/rates';
+  };
+
   try {
-    // Try to hit the local Express server
-    const res = await fetch('http://localhost:5000/api/rates');
+    const res = await fetch(getApiUrl());
     if (res.ok) {
       return await res.json();
     }

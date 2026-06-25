@@ -177,8 +177,8 @@ function calculateRatesFromSpot(spotUsd, usdInr, usdAed) {
   const spotInrGram = spotUsdGram * usdInr;
   const spotAedGram = spotUsdGram * usdAed;
 
-  // India landing price: spot price in INR + 15% customs duty + 3% GST
-  const india24kCalculated = Math.round(spotInrGram * 1.15 * 1.03);
+  // India landing price: spot price in INR + 9% customs duty + 3% GST
+  const india24kCalculated = Math.round(spotInrGram * 1.09 * 1.03);
   const india22kCalculated = Math.round(india24kCalculated * (22 / 24));
   const india18kCalculated = Math.round(india24kCalculated * (18 / 24));
 
