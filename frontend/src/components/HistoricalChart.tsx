@@ -2,6 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Sparkles } from 'lucide-react';
 import { fetchHistoricalRates, type HistoricalRate } from '../utils/api';
 
+interface MarketEvent {
+  date: string;
+  title: string;
+  description: string;
+  impact: 'up' | 'down';
+}
+
+const MARKET_EVENTS: MarketEvent[] = [
+  {
+    date: '2026-06-23',
+    title: 'Fed Rate Cut Hopes Hold',
+    description: 'Federal Reserve hinted at potential interest rate cuts in late 2026, boosting gold appeal.',
+    impact: 'up'
+  },
+  {
+    date: '2026-06-18',
+    title: 'Rupee Weakness Pressure',
+    description: 'USD/INR hit local record highs, driving landed import costs higher for Indian buyers.',
+    impact: 'up'
+  },
+  {
+    date: '2026-06-10',
+    title: 'Strong Jewelry Sales Volume',
+    description: 'Akshaya Tritiya spillover and wedding demand created high showroom volumes.',
+    impact: 'up'
+  },
+  {
+    date: '2026-06-03',
+    title: 'Inflation Index Jump',
+    description: 'US CPI inflation numbers came in higher, triggering safety commodity hedging.',
+    impact: 'up'
+  },
+  {
+    date: '2026-05-28',
+    title: 'Custom Tariff Adjustment',
+    description: 'Minor reductions in refinery board premiums corrected localized rates.',
+    impact: 'down'
+  }
+];
+
 export const HistoricalChart: React.FC = () => {
   const [range, setRange] = useState<'1mo' | '1y'>('1mo');
   const [metal, setMetal] = useState<'gold' | 'silver'>('gold');
@@ -29,6 +69,11 @@ export const HistoricalChart: React.FC = () => {
         <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Loading historical data...</span>
         <style>{`
           @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes svg-pulse {
+            0% { r: 6; opacity: 0.9; }
+            50% { r: 12; opacity: 0.2; }
+            100% { r: 6; opacity: 0.9; }
+          }
         `}</style>
       </div>
     );
@@ -270,6 +315,32 @@ export const HistoricalChart: React.FC = () => {
             />
           )}
 
+          {/* Historical Event Markers */}
+          {points.map((p, i) => {
+            const event = MARKET_EVENTS.find(e => e.date === p.item.date);
+            if (!event) return null;
+            return (
+              <g key={`event-${i}`}>
+                <circle 
+                  cx={p.x} 
+                  cy={p.y} 
+                  r="8" 
+                  fill="none" 
+                  stroke={event.impact === 'up' ? 'var(--color-up)' : 'var(--color-down)'} 
+                  strokeWidth="1.5"
+                  opacity="0.7"
+                  style={{ animation: 'svg-pulse 1.8s infinite ease-in-out' }}
+                />
+                <circle 
+                  cx={p.x} 
+                  cy={p.y} 
+                  r="3.5" 
+                  fill={event.impact === 'up' ? 'var(--color-up)' : 'var(--color-down)'} 
+                />
+              </g>
+            );
+          })}
+
           {/* Data Points Hover Anchors */}
           {points.map((p, i) => (
             <circle 
@@ -314,30 +385,43 @@ export const HistoricalChart: React.FC = () => {
         </svg>
 
         {/* Hover Tooltip Overlay */}
-        {activeHover && (
-          <div style={{
-            position: 'absolute',
-            left: `${(activeHover.x / w) * 100}%`,
-            top: `${(activeHover.y / h) * 100 - 45}%`,
-            transform: 'translateX(-50%)',
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid var(--border-color)',
-            padding: '6px 12px',
-            borderRadius: '8px',
-            pointerEvents: 'none',
-            boxShadow: 'var(--shadow-md)',
-            zIndex: 10,
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '2px'
-          }}>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{activeHover.item.date}</span>
-            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              ₹{getPrice(activeHover.item).toLocaleString()} <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>/ g</span>
-            </span>
-          </div>
-        )}
+        {activeHover && (() => {
+          const event = MARKET_EVENTS.find(e => e.date === activeHover.item.date);
+          return (
+            <div style={{
+              position: 'absolute',
+              left: `${(activeHover.x / w) * 100}%`,
+              top: `${(activeHover.y / h) * 100 - 45}%`,
+              transform: 'translateX(-50%)',
+              background: 'rgba(15, 23, 42, 0.95)',
+              border: '1px solid var(--border-color)',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              pointerEvents: 'none',
+              boxShadow: 'var(--shadow-md)',
+              zIndex: 10,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px',
+              minWidth: event ? '180px' : 'auto'
+            }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{activeHover.item.date}</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                ₹{getPrice(activeHover.item).toLocaleString()} <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>/ g</span>
+              </span>
+              {event && (
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '4px', paddingTop: '4px', whiteSpace: 'normal' }}>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--gold-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    ⚡ {event.title}
+                  </span>
+                  <p style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.2 }}>
+                    {event.description}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Trajectory Details Footer */}

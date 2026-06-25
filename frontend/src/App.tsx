@@ -21,6 +21,7 @@ import { ChitPlanner } from './components/ChitPlanner';
 import { HistoricalChart } from './components/HistoricalChart';
 import { MarketInsights } from './components/MarketInsights';
 import { InvestmentComparison } from './components/InvestmentComparison';
+import { SearchIndexHub } from './components/SearchIndexHub';
 
 const DAILY_TIPS = [
   "Look for the BIS Hallmark: Ensure your jewelry has the BIS logo, purity grade (e.g. 22K916), and the unique 6-digit HUID code before paying.",
@@ -492,6 +493,9 @@ export default function App() {
           </div>
 
         </div>
+
+        {/* AI & Search Engine Optimization Index Directory */}
+        <SearchIndexHub />
 
       </main>
 
