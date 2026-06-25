@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Sparkles } from 'lucide-react';
+import { Calendar, Sparkles, X, Maximize2 } from 'lucide-react';
 import { fetchHistoricalRates, type HistoricalRate } from '../utils/api';
 
 interface MarketEvent {
@@ -48,6 +48,7 @@ export const HistoricalChart: React.FC = () => {
   const [history, setHistory] = useState<HistoricalRate[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   useEffect(() => {
     setLoading(true);
@@ -150,6 +151,216 @@ export const HistoricalChart: React.FC = () => {
 
   const activeHover = hoverIndex !== null ? points[hoverIndex] : null;
 
+  const chartSVG = (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <svg 
+        viewBox={`0 0 ${w} ${h}`} 
+        width="100%" 
+        height="100%"
+        style={{ overflow: 'visible' }}
+        onMouseLeave={() => setHoverIndex(null)}
+      >
+        {/* Gradients */}
+        <defs>
+          <linearGradient id="area-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} stopOpacity="0.18" />
+            <stop offset="100%" stopColor={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} stopOpacity="0.00" />
+          </linearGradient>
+          <linearGradient id="glow-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} />
+            <stop offset="100%" stopColor="var(--color-up)" />
+          </linearGradient>
+        </defs>
+
+        {/* Grid lines & Y ticks */}
+        {yTicks.map((tick, i) => (
+          <g key={i}>
+            <line 
+              x1={paddingLeft} 
+              y1={tick.y} 
+              x2={w - paddingRight} 
+              y2={tick.y} 
+              stroke="rgba(255,255,255,0.03)" 
+              strokeWidth="1" 
+            />
+            <line 
+              x1={paddingLeft} 
+              y1={tick.y} 
+              x2={w - paddingRight} 
+              y2={tick.y} 
+              stroke="rgba(255,255,255,0.03)" 
+              strokeWidth="1" 
+            />
+            <text 
+              x={paddingLeft - 8} 
+              y={tick.y + 4} 
+              fill="var(--text-muted)" 
+              fontSize="9" 
+              textAnchor="end"
+              fontFamily="monospace"
+            >
+              ₹{Math.round(tick.val).toLocaleString()}
+            </text>
+          </g>
+        ))}
+
+        {/* Area under curve */}
+        <path d={areaD} fill="url(#area-grad)" />
+
+        {/* Main Trend Line */}
+        <path 
+          d={pathD} 
+          fill="none" 
+          stroke={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} 
+          strokeWidth="2.5" 
+          strokeLinecap="round"
+        />
+
+        {/* AI Predicted Extension (Dotted) */}
+        <path 
+          d={predictionPathD} 
+          fill="none" 
+          stroke="url(#glow-grad)" 
+          strokeWidth="2.5" 
+          strokeDasharray="5,4" 
+          strokeLinecap="round"
+        />
+
+        {/* Label indicating AI Prediction Zone */}
+        <text 
+          x={(lastPoint.x + predX) / 2} 
+          y={Math.min(lastPoint.y, predY) - 10} 
+          fill="var(--color-up)" 
+          fontSize="8" 
+          fontWeight="bold" 
+          textAnchor="middle"
+          letterSpacing="0.05em"
+        >
+          AI FORECAST
+        </text>
+
+        {/* Hover tracker line */}
+        {activeHover && (
+          <line 
+            x1={activeHover.x} 
+            y1={paddingTop} 
+            x2={activeHover.x} 
+            y2={paddingTop + chartH} 
+            stroke="rgba(255,255,255,0.15)" 
+            strokeDasharray="3,3"
+          />
+        )}
+
+        {/* Historical Event Markers */}
+        {points.map((p, i) => {
+          const event = MARKET_EVENTS.find(e => e.date === p.item.date);
+          if (!event) return null;
+          return (
+            <g key={`event-${i}`}>
+              <circle 
+                cx={p.x} 
+                cy={p.y} 
+                r="8" 
+                fill="none" 
+                stroke={event.impact === 'up' ? 'var(--color-up)' : 'var(--color-down)'} 
+                strokeWidth="1.5"
+                opacity="0.7"
+                style={{ animation: 'svg-pulse 1.8s infinite ease-in-out' }}
+              />
+              <circle 
+                cx={p.x} 
+                cy={p.y} 
+                r="3.5" 
+                fill={event.impact === 'up' ? 'var(--color-up)' : 'var(--color-down)'} 
+              />
+            </g>
+          );
+        })}
+
+        {/* Data Points Hover Anchors */}
+        {points.map((p, i) => (
+          <circle 
+            key={i} 
+            cx={p.x} 
+            cy={p.y} 
+            r={activeHover?.idx === i ? 5 : 4} 
+            fill={activeHover?.idx === i ? (metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)') : 'transparent'} 
+            stroke={activeHover?.idx === i ? 'rgba(255,255,255,0.5)' : 'transparent'}
+            strokeWidth="2"
+            onMouseEnter={() => setHoverIndex(i)}
+            style={{ cursor: 'pointer', transition: 'r 0.1s' }}
+          />
+        ))}
+
+        {/* Predicted Endpoint Circle */}
+        <circle 
+          cx={predX} 
+          cy={predY} 
+          r="4" 
+          fill="var(--color-up)" 
+          style={{ filter: 'drop-shadow(0 0 6px var(--color-up))' }}
+        />
+
+        {/* X Axis dates (First, Middle, Last) */}
+        {points.length > 0 && (
+          <g fill="var(--text-muted)" fontSize="9">
+            <text x={points[0].x} y={h - 10} textAnchor="start">
+              {getLabel(points[0].item)}
+            </text>
+            <text x={points[Math.floor(points.length / 2)].x} y={h - 10} textAnchor="middle">
+              {getLabel(points[Math.floor(points.length / 2)].item)}
+            </text>
+            <text x={lastPoint.x} y={h - 10} textAnchor="end">
+              {getLabel(lastPoint.item)}
+            </text>
+            <text x={predX} y={h - 10} textAnchor="middle" fill="var(--color-up)" fontWeight="600">
+              {range === '1mo' ? '1M Pred' : '1Y Pred'}
+            </text>
+          </g>
+        )}
+      </svg>
+
+      {/* Hover Tooltip Overlay */}
+      {activeHover && (() => {
+        const event = MARKET_EVENTS.find(e => e.date === activeHover.item.date);
+        return (
+          <div style={{
+            position: 'absolute',
+            left: `${(activeHover.x / w) * 100}%`,
+            top: `${(activeHover.y / h) * 100 - 45}%`,
+            transform: 'translateX(-50%)',
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid var(--border-color)',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+            boxShadow: 'var(--shadow-md)',
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '2px',
+            minWidth: event ? '180px' : 'auto'
+          }}>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{activeHover.item.date}</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              ₹{getPrice(activeHover.item).toLocaleString()} <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>/ g</span>
+            </span>
+            {event && (
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '4px', paddingTop: '4px', whiteSpace: 'normal' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--gold-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  ⚡ {event.title}
+                </span>
+                <p style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.2 }}>
+                  {event.description}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+    </div>
+  );
+
   return (
     <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
@@ -215,213 +426,16 @@ export const HistoricalChart: React.FC = () => {
         </div>
       </div>
 
-      {/* SVG Interactive Chart */}
-      <div style={{ position: 'relative', width: '100%' }}>
-        <svg 
-          viewBox={`0 0 ${w} ${h}`} 
-          width="100%" 
-          height="100%"
-          style={{ overflow: 'visible' }}
-          onMouseLeave={() => setHoverIndex(null)}
-        >
-          {/* Gradients */}
-          <defs>
-            <linearGradient id="area-grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} stopOpacity="0.18" />
-              <stop offset="100%" stopColor={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} stopOpacity="0.00" />
-            </linearGradient>
-            <linearGradient id="glow-grad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} />
-              <stop offset="100%" stopColor="var(--color-up)" />
-            </linearGradient>
-          </defs>
-
-          {/* Grid lines & Y ticks */}
-          {yTicks.map((tick, i) => (
-            <g key={i}>
-              <line 
-                x1={paddingLeft} 
-                y1={tick.y} 
-                x2={w - paddingRight} 
-                y2={tick.y} 
-                stroke="rgba(255,255,255,0.03)" 
-                strokeWidth="1" 
-              />
-              <line 
-                x1={paddingLeft} 
-                y1={tick.y} 
-                x2={w - paddingRight} 
-                y2={tick.y} 
-                stroke="rgba(255,255,255,0.03)" 
-                strokeWidth="1" 
-              />
-              <text 
-                x={paddingLeft - 8} 
-                y={tick.y + 4} 
-                fill="var(--text-muted)" 
-                fontSize="9" 
-                textAnchor="end"
-                fontFamily="monospace"
-              >
-                ₹{Math.round(tick.val).toLocaleString()}
-              </text>
-            </g>
-          ))}
-
-          {/* Area under curve */}
-          <path d={areaD} fill="url(#area-grad)" />
-
-          {/* Main Trend Line */}
-          <path 
-            d={pathD} 
-            fill="none" 
-            stroke={metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)'} 
-            strokeWidth="2.5" 
-            strokeLinecap="round"
-          />
-
-          {/* AI Predicted Extension (Dotted) */}
-          <path 
-            d={predictionPathD} 
-            fill="none" 
-            stroke="url(#glow-grad)" 
-            strokeWidth="2.5" 
-            strokeDasharray="5,4" 
-            strokeLinecap="round"
-          />
-
-          {/* Label indicating AI Prediction Zone */}
-          <text 
-            x={(lastPoint.x + predX) / 2} 
-            y={Math.min(lastPoint.y, predY) - 10} 
-            fill="var(--color-up)" 
-            fontSize="8" 
-            fontWeight="bold" 
-            textAnchor="middle"
-            letterSpacing="0.05em"
-          >
-            AI FORECAST
-          </text>
-
-          {/* Hover tracker line */}
-          {activeHover && (
-            <line 
-              x1={activeHover.x} 
-              y1={paddingTop} 
-              x2={activeHover.x} 
-              y2={paddingTop + chartH} 
-              stroke="rgba(255,255,255,0.15)" 
-              strokeDasharray="3,3"
-            />
-          )}
-
-          {/* Historical Event Markers */}
-          {points.map((p, i) => {
-            const event = MARKET_EVENTS.find(e => e.date === p.item.date);
-            if (!event) return null;
-            return (
-              <g key={`event-${i}`}>
-                <circle 
-                  cx={p.x} 
-                  cy={p.y} 
-                  r="8" 
-                  fill="none" 
-                  stroke={event.impact === 'up' ? 'var(--color-up)' : 'var(--color-down)'} 
-                  strokeWidth="1.5"
-                  opacity="0.7"
-                  style={{ animation: 'svg-pulse 1.8s infinite ease-in-out' }}
-                />
-                <circle 
-                  cx={p.x} 
-                  cy={p.y} 
-                  r="3.5" 
-                  fill={event.impact === 'up' ? 'var(--color-up)' : 'var(--color-down)'} 
-                />
-              </g>
-            );
-          })}
-
-          {/* Data Points Hover Anchors */}
-          {points.map((p, i) => (
-            <circle 
-              key={i} 
-              cx={p.x} 
-              cy={p.y} 
-              r={activeHover?.idx === i ? 5 : 4} 
-              fill={activeHover?.idx === i ? (metal === 'gold' ? 'var(--gold-primary)' : 'var(--text-primary)') : 'transparent'} 
-              stroke={activeHover?.idx === i ? 'rgba(255,255,255,0.5)' : 'transparent'}
-              strokeWidth="2"
-              onMouseEnter={() => setHoverIndex(i)}
-              style={{ cursor: 'pointer', transition: 'r 0.1s' }}
-            />
-          ))}
-
-          {/* Predicted Endpoint Circle */}
-          <circle 
-            cx={predX} 
-            cy={predY} 
-            r="4" 
-            fill="var(--color-up)" 
-            style={{ filter: 'drop-shadow(0 0 6px var(--color-up))' }}
-          />
-
-          {/* X Axis dates (First, Middle, Last) */}
-          {points.length > 0 && (
-            <g fill="var(--text-muted)" fontSize="9">
-              <text x={points[0].x} y={h - 10} textAnchor="start">
-                {getLabel(points[0].item)}
-              </text>
-              <text x={points[Math.floor(points.length / 2)].x} y={h - 10} textAnchor="middle">
-                {getLabel(points[Math.floor(points.length / 2)].item)}
-              </text>
-              <text x={lastPoint.x} y={h - 10} textAnchor="end">
-                {getLabel(lastPoint.item)}
-              </text>
-              <text x={predX} y={h - 10} textAnchor="middle" fill="var(--color-up)" fontWeight="600">
-                {range === '1mo' ? '1M Pred' : '1Y Pred'}
-              </text>
-            </g>
-          )}
-        </svg>
-
-        {/* Hover Tooltip Overlay */}
-        {activeHover && (() => {
-          const event = MARKET_EVENTS.find(e => e.date === activeHover.item.date);
-          return (
-            <div style={{
-              position: 'absolute',
-              left: `${(activeHover.x / w) * 100}%`,
-              top: `${(activeHover.y / h) * 100 - 45}%`,
-              transform: 'translateX(-50%)',
-              background: 'rgba(15, 23, 42, 0.95)',
-              border: '1px solid var(--border-color)',
-              padding: '8px 12px',
-              borderRadius: '8px',
-              pointerEvents: 'none',
-              boxShadow: 'var(--shadow-md)',
-              zIndex: 10,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '2px',
-              minWidth: event ? '180px' : 'auto'
-            }}>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{activeHover.item.date}</span>
-              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                ₹{getPrice(activeHover.item).toLocaleString()} <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>/ g</span>
-              </span>
-              {event && (
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '4px', paddingTop: '4px', whiteSpace: 'normal' }}>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--gold-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    ⚡ {event.title}
-                  </span>
-                  <p style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.2 }}>
-                    {event.description}
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })()}
+      {/* SVG Interactive Chart (Clickable) */}
+      <div 
+        onClick={() => setIsFullscreen(true)}
+        style={{ position: 'relative', width: '100%', cursor: 'pointer' }}
+        title="Click to view full screen"
+      >
+        <div style={{ position: 'absolute', top: 0, right: 0, padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', zIndex: 5, pointerEvents: 'none' }}>
+          <Maximize2 size={16} className="gold-text" />
+        </div>
+        {chartSVG}
       </div>
 
       {/* Trajectory Details Footer */}
@@ -446,6 +460,38 @@ export const HistoricalChart: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Fullscreen Overlay */}
+      {isFullscreen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(7, 10, 19, 0.95)',
+          backdropFilter: 'blur(10px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="chart-modal-content" style={{ position: 'relative', width: '100%', height: '100%', maxWidth: '1000px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <button 
+              onClick={() => setIsFullscreen(false)}
+              style={{ position: 'absolute', top: 0, right: 0, zIndex: 100, background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '8px', borderRadius: '50%', cursor: 'pointer', display: 'flex' }}
+            >
+              <X size={24} />
+            </button>
+            
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--gold-primary)', textAlign: 'center', paddingTop: '10px' }}>
+              Interactive Price Trajectory ({metal === 'gold' ? 'Gold 22K' : 'Silver'} - {range === '1mo' ? '1 Month' : '1 Year'})
+            </h2>
+            
+            <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
+              {chartSVG}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

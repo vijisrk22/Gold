@@ -11,8 +11,16 @@ import {
   Info,
   MapPin,
   Bell,
-  Activity
+  Activity,
+  Calendar, 
+  TrendingUp, 
+  TrendingDown, 
+  Search, 
+  Maximize2, 
+  Settings, 
+  Filter 
 } from 'lucide-react';
+import { SplashScreen } from './components/SplashScreen';
 import { fetchGoldRates, getSavedOverrides } from './utils/api';
 import type { GoldRatesPayload } from './utils/api';
 import { StockMarketTicker } from './components/StockMarketTicker';
@@ -60,12 +68,40 @@ const GoogleTranslateWidget = React.memo(() => {
       script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
       document.body.appendChild(script);
     }
+
+    // Bulletproof MutationObserver to aggressively destroy the top banner
+    const observer = new MutationObserver(() => {
+      // Force body back to top
+      if (document.body.style.top !== '0px') {
+        document.body.style.setProperty('top', '0px', 'important');
+        document.body.style.setProperty('position', 'static', 'important');
+      }
+
+      // Hide all known banner classes
+      document.querySelectorAll('.goog-te-banner-frame, .VIpgJd-Zvi9od-ORHb-OEVmcd, #goog-gt-tt').forEach(el => {
+        (el as HTMLElement).style.setProperty('display', 'none', 'important');
+      });
+
+      // Target the container divs injected into body that are NOT the dropdown menu
+      document.querySelectorAll('body > .skiptranslate').forEach(div => {
+        const iframe = div.querySelector('iframe');
+        // The dropdown menu iframe has the class 'goog-te-menu-frame'
+        if (iframe && !iframe.classList.contains('goog-te-menu-frame') && !iframe.id.includes('menu')) {
+          (div as HTMLElement).style.setProperty('display', 'none', 'important');
+        }
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+
+    return () => observer.disconnect();
   }, []);
 
   return <div id="google_translate_element" style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '2px 8px', minWidth: '130px', minHeight: '30px', overflow: 'hidden' }}></div>;
 }, () => true);
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [data, setData] = useState<GoldRatesPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -149,7 +185,9 @@ export default function App() {
   const savingsPercent = (savingsPerGram / india24k) * 100;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-main)' }}>
+    <>
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-main)' }}>
       
       {/* Top Banner Marquee Ticker */}
       {data && <StockMarketTicker market={data.market} />}
@@ -396,8 +434,6 @@ export default function App() {
                       gold24k={brand.gold24k}
                       gold18k={brand.gold18k}
                       currency="INR"
-
-                      premium={brand.premium}
                       sparklineData={getMockSparkline(brand.gold22k, key === 'lalitha' ? 'down' : 'up')}
                     />
                   );
@@ -529,6 +565,7 @@ export default function App() {
         </p>
       </footer>
 
-    </div>
+      </div>
+    </>
   );
 }

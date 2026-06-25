@@ -9,7 +9,6 @@ interface GoldCardProps {
   gold18k?: number;
   currency: string;
   badge?: string;
-  premium?: number;
   sparklineData?: number[];
   inrEquivalent22k?: number;
   inrEquivalent24k?: number;
@@ -25,7 +24,6 @@ export const GoldCard: React.FC<GoldCardProps> = ({
   gold18k,
   currency,
   badge,
-  premium,
   inrEquivalent22k,
   inrEquivalent24k,
   isDubai = false,

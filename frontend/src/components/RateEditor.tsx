@@ -53,18 +53,19 @@ export const RateEditor: React.FC<RateEditorProps> = ({ onSave }) => {
         onClick={() => setIsOpen(true)}
         className="glass-panel"
         style={{ 
-          padding: '10px 16px', 
+          padding: '10px', 
           cursor: 'pointer', 
           display: 'flex', 
           alignItems: 'center', 
+          justifyContent: 'center',
           gap: '8px', 
           fontSize: '0.85rem',
           color: 'var(--text-primary)',
           fontWeight: 600
         }}
+        title="Customizer"
       >
-        <Settings size={16} className={config.enabled ? 'gold-text' : ''} />
-        Customizer {config.enabled ? '(Manual)' : ''}
+        <Settings size={18} className={config.enabled ? 'gold-text' : ''} />
       </button>
 
       {isOpen && createPortal(

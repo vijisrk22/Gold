@@ -59,11 +59,32 @@
   padding: 0;
 }
 
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Suppress Google Translate Top Banner - AGGRESSIVE */
+.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+#goog-gt-tt {
+  display: none !important;
+}
+
+html, body {
+  top: 0px !important;
+  position: static !important;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-main);
   color: var(--text-primary);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
   line-height: 1.5;
@@ -374,5 +395,16 @@ h1, h2, h3, h4, h5, h6 {
   .header-controls {
     justify-content: center;
     width: 100%;
+  }
+}
+
+/* Chart Modal Mobile Landscape Auto-Rotation */
+@media (max-width: 768px) and (orientation: portrait) {
+  .chart-modal-content {
+    transform: rotate(90deg);
+    transform-origin: center center;
+    width: 100vh !important;
+    height: 100vw !important;
+    max-width: none !important;
   }
 }
