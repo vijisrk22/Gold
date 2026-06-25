@@ -58,6 +58,82 @@ async function scrapeGrtRates() {
   return null;
 }
 
+// Scrape Mangal & Mangal Trichy rates
+async function scrapeMangalRates() {
+  const url = 'https://mangalandmangal.in/';
+  const html = await fetchHtml(url);
+  if (!html) return null;
+
+  try {
+    const match = /GOLD\s*-\s*22k\s*-\s*1G\s*Rs\.\s*([\d.]+)/i.exec(html);
+    if (match) {
+      const gold22k = parseInt(match[1].replace(/,/g, ''), 10);
+      const gold24k = Math.round(gold22k * (24 / 22)); 
+      const gold18k = Math.round(gold22k * (18 / 22));
+      return { gold24k, gold22k, gold18k };
+    }
+  } catch (error) {
+    console.error('Failed to parse Mangal rates:', error.message);
+  }
+  return null;
+}
+
+// Scrape Kalyan Jewellers rates from new store site
+async function scrapeKalyanRates() {
+  const url = 'https://store.kalyanjewellers.net/gold-rate/india';
+  const html = await fetchHtml(url);
+  if (!html) return null;
+
+  try {
+    const match = /<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s.exec(html);
+    if (match) {
+      const data = JSON.parse(match[1]);
+      const rates = data.props?.pageProps?.goldRate;
+      if (Array.isArray(rates)) {
+        let gold24k = 0;
+        let gold22k = 0;
+        let gold18k = 0;
+
+        for (const item of rates) {
+          if (item['karat_24(995)']) gold24k = item['karat_24(995)'].price_per_gram;
+          if (item['karat_24(999)']) gold24k = item['karat_24(999)'].price_per_gram;
+          if (item.karat_22) gold22k = item.karat_22.price_per_gram;
+          if (item.karat_18) gold18k = item.karat_18.price_per_gram;
+        }
+
+        if (gold22k > 0) {
+          if (!gold24k) gold24k = Math.round(gold22k * (24 / 22));
+          if (!gold18k) gold18k = Math.round(gold22k * (18 / 22));
+          return { gold24k, gold22k, gold18k };
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to parse Kalyan rates from store:', error.message);
+  }
+  return null;
+}
+
+// Scrape Lalithaa Jewellery rates
+async function scrapeLalithaRates() {
+  const url = 'https://api.lalithaajewellery.com/public/pricings/latest?state_id=df30f5aa-75b6-4766-8317-25cf4eaf43a6';
+  try {
+    const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (response.ok) {
+      const data = await response.json();
+      if (data?.status === 'success' && data?.data?.prices?.gold?.price) {
+        const gold22k = Math.round(data.data.prices.gold.price);
+        const gold24k = Math.round(gold22k * (24 / 22));
+        const gold18k = Math.round(gold22k * (18 / 22));
+        return { gold24k, gold22k, gold18k };
+      }
+    }
+  } catch (error) {
+    console.error('Failed to parse Lalithaa rates via API:', error.message);
+  }
+  return null;
+}
+
 // Scrape Gold rates for a specific city from GoodReturns
 async function scrapeCityRates(city) {
   const url = `https://www.goodreturns.in/gold-rates/${city}.html`;
@@ -204,7 +280,7 @@ function calculateRatesFromSpot(spotUsd, usdInr, usdAed) {
   };
 }
 
-function getBrandsForLocation(city, base24k, base22k, base18k) {
+function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kalyanDirect, lalithaDirect) {
   const allBrands = {
     tanishq: {
       name: 'Tanishq (Tata)',
@@ -223,12 +299,12 @@ function getBrandsForLocation(city, base24k, base22k, base18k) {
       description: 'Traditional South Indian patterns and transparent rates'
     },
     lalitha: {
-      name: 'Lalitha Jewellery',
-      gold24k: base24k - 5,
-      gold22k: base22k - 5,
-      gold18k: base18k - 4,
-      premium: -5,
-      description: 'Known for wholesale pricing and lowest making charges'
+      name: 'Lalithaa Jewellery',
+      gold24k: lalithaDirect ? lalithaDirect.gold24k : base24k + 5,
+      gold22k: lalithaDirect ? lalithaDirect.gold22k : base22k + 5,
+      gold18k: lalithaDirect ? lalithaDirect.gold18k : base18k + 5,
+      premium: lalithaDirect ? (lalithaDirect.gold22k - base22k) : 5,
+      description: 'Known for transparent pricing and low making charges'
     },
     malabar: {
       name: 'Malabar Gold & Diamonds',
@@ -317,11 +393,27 @@ function getBrandsForLocation(city, base24k, base22k, base18k) {
       gold18k: base18k + 30,
       premium: 40,
       description: 'Elite royal heritage jeweler of South India offering top luxury'
+    },
+    thangamayil: {
+      name: 'Thangamayil',
+      gold24k: base24k,
+      gold22k: base22k,
+      gold18k: base18k,
+      premium: 0,
+      description: 'Leading retail chain in Tamil Nadu with exact market pricing'
+    },
+    mangal: {
+      name: 'Mangal & Mangal (Trichy)',
+      gold24k: mangalDirect ? mangalDirect.gold24k : base24k,
+      gold22k: mangalDirect ? mangalDirect.gold22k : base22k,
+      gold18k: mangalDirect ? mangalDirect.gold18k : base18k,
+      premium: mangalDirect ? (mangalDirect.gold22k - base22k) : 0,
+      description: 'Trusted Trichy showroom scraped live from official site'
     }
   };
 
   const cityBrands = {
-    chennai: ['grt', 'tanishq', 'lalitha', 'malabar', 'kalyan', 'joyalukkas', 'avr'],
+    chennai: ['grt', 'tanishq', 'lalitha', 'malabar', 'kalyan', 'joyalukkas', 'avr', 'thangamayil', 'mangal'],
     mumbai: ['tanishq', 'tbz', 'waman', 'malabar', 'kalyan', 'joyalukkas'],
     delhi: ['tanishq', 'pcj', 'kalyan', 'malabar', 'joyalukkas'],
     bangalore: ['ckc', 'bhima', 'tanishq', 'grt', 'malabar', 'kalyan'],
@@ -446,8 +538,11 @@ app.get('/api/rates', async (req, res) => {
 
   // 2. Attempt scraping
   const isChennai = city === 'chennai';
-  const [grtDirect, cityScraped, dubaiScraped, silverScraped] = await Promise.all([
+  const [grtDirect, mangalDirect, kalyanDirect, lalithaDirect, cityScraped, dubaiScraped, silverScraped] = await Promise.all([
     isChennai ? scrapeGrtRates() : Promise.resolve(null),
+    scrapeMangalRates(),
+    scrapeKalyanRates(),
+    scrapeLalithaRates(),
     scrapeCityRates(city),
     scrapeDubaiRates(),
     scrapeCitySilverRate(city)
@@ -478,7 +573,7 @@ app.get('/api/rates', async (req, res) => {
   const base24k = finalCity.gold24k;
   const base18k = finalCity.gold18k;
 
-  const brands = getBrandsForLocation(city, base24k, base22k, base18k);
+  const brands = getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kalyanDirect, lalithaDirect);
 
   // 4. US Gold rates
   const usGrams24k = parseFloat((spotPrice / 31.1034768).toFixed(2));

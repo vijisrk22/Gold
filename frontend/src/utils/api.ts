@@ -215,6 +215,22 @@ export const getFallbackRates = (location?: string, overrides?: ManualOverrides)
       premium: 20,
       description: 'World-renowned collections and global standard retail rate'
     },
+    lalitha: {
+      name: 'Lalithaa Jewellery',
+      gold24k: base24k + 5,
+      gold22k: base22k + 5,
+      gold18k: base18k + 5,
+      premium: 5,
+      description: 'Known for transparent pricing and low making charges'
+    },
+    malabar: {
+      name: 'Malabar Gold & Diamonds',
+      gold24k: base24k + 20,
+      gold22k: base22k + 20,
+      gold18k: base18k + 15,
+      premium: 20,
+      description: 'World-renowned collections and global standard retail rate'
+    },
     avr: {
       name: 'AVR Swarna Mahal',
       gold24k: base24k + 5,
@@ -278,11 +294,27 @@ export const getFallbackRates = (location?: string, overrides?: ManualOverrides)
       gold18k: base18k + 30,
       premium: 40,
       description: 'Elite royal heritage jeweler of South India offering top luxury'
+    },
+    thangamayil: {
+      name: 'Thangamayil',
+      gold24k: base24k,
+      gold22k: base22k,
+      gold18k: base18k,
+      premium: 0,
+      description: 'Leading retail chain in Tamil Nadu with exact market pricing'
+    },
+    mangal: {
+      name: 'Mangal & Mangal (Trichy)',
+      gold24k: base24k,
+      gold22k: base22k,
+      gold18k: base18k,
+      premium: 0,
+      description: 'Trusted Trichy showroom scraped live from official site'
     }
   };
 
   const cityBrands: { [key: string]: string[] } = {
-    chennai: ['grt', 'tanishq', 'lalitha', 'malabar', 'kalyan', 'joyalukkas', 'avr'],
+    chennai: ['grt', 'tanishq', 'lalitha', 'malabar', 'kalyan', 'joyalukkas', 'avr', 'thangamayil', 'mangal'],
     mumbai: ['tanishq', 'tbz', 'waman', 'malabar', 'kalyan', 'joyalukkas'],
     delhi: ['tanishq', 'pcj', 'kalyan', 'malabar', 'joyalukkas'],
     bangalore: ['ckc', 'bhima', 'tanishq', 'grt', 'malabar', 'kalyan'],

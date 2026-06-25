@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Settings, Save, AlertTriangle, ToggleLeft, ToggleRight } from 'lucide-react';
 import { getSavedOverrides, saveOverrides } from '../utils/api';
 import type { ManualOverrides } from '../utils/api';
@@ -66,7 +67,7 @@ export const RateEditor: React.FC<RateEditorProps> = ({ onSave }) => {
         Customizer {config.enabled ? '(Manual)' : ''}
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div style={{
           position: 'fixed',
           top: 0,
@@ -77,9 +78,10 @@ export const RateEditor: React.FC<RateEditorProps> = ({ onSave }) => {
           backdropFilter: 'blur(4px)',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000,
-          padding: '20px'
+          alignItems: 'flex-start',
+          zIndex: 99999,
+          padding: '40px 20px',
+          overflowY: 'auto'
         }}>
           <div className="glass-panel" style={{
             background: 'var(--bg-main)',
@@ -87,11 +89,10 @@ export const RateEditor: React.FC<RateEditorProps> = ({ onSave }) => {
             width: '100%',
             padding: '24px',
             border: '1px solid var(--border-color)',
-            maxHeight: '90vh',
-            overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px'
+            gap: '16px',
+            margin: '0 auto'
           }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px' }}>
@@ -259,7 +260,8 @@ export const RateEditor: React.FC<RateEditorProps> = ({ onSave }) => {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
