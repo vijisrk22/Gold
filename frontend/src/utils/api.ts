@@ -123,7 +123,7 @@ export interface ManualOverrides {
 }
 
 // Default fallback data (used if server is offline and no overrides exist)
-export const getFallbackRates = (overrides?: ManualOverrides): GoldRatesPayload => {
+export const getFallbackRates = (location?: string, overrides?: ManualOverrides): GoldRatesPayload => {
   const isOverride = overrides && overrides.enabled;
   
   const spotGold = isOverride ? overrides.spotGold : 4010.50;
@@ -131,10 +131,34 @@ export const getFallbackRates = (overrides?: ManualOverrides): GoldRatesPayload 
   const usdInr = isOverride ? overrides.usdInr : 94.185;
   const usdAed = 3.6725;
   
-  const base24k = isOverride ? overrides.gold24k : 14335;
-  const base22k = isOverride ? overrides.gold22k : 13140;
+  // Apply city-based variations to fallback rates to make offline/mobile client feel realistic
+  let cityOffset = 0;
+  let silverOffset = 0;
+  const city = (location || 'chennai').toLowerCase();
+  if (city === 'mumbai') {
+    cityOffset = -45;
+    silverOffset = -1.2;
+  } else if (city === 'delhi') {
+    cityOffset = 60;
+    silverOffset = 1.8;
+  } else if (city === 'bangalore') {
+    cityOffset = -20;
+    silverOffset = -0.5;
+  } else if (city === 'kolkata') {
+    cityOffset = 35;
+    silverOffset = 0.8;
+  } else if (city === 'hyderabad') {
+    cityOffset = 15;
+    silverOffset = 0.2;
+  } else if (city === 'kerala') {
+    cityOffset = -80;
+    silverOffset = -2.0;
+  }
+
+  const base24k = (isOverride ? overrides.gold24k : 14335) + cityOffset;
+  const base22k = (isOverride ? overrides.gold22k : 13140) + cityOffset;
   const base18k = Math.round(base24k * (18 / 24));
-  const silver = isOverride ? overrides.silver : 105;
+  const silver = (isOverride ? overrides.silver : 105) + silverOffset;
   
   const dubai24k_aed = isOverride ? overrides.dubai24k_aed : 486.50;
   const dubai22k_aed = isOverride ? overrides.dubai22k_aed : 450.50;
@@ -142,76 +166,144 @@ export const getFallbackRates = (overrides?: ManualOverrides): GoldRatesPayload 
   const dubai24k_inr = Math.round(dubai24k_aed * (usdInr / usdAed));
   const dubai22k_inr = Math.round(dubai22k_aed * (usdInr / usdAed));
 
-  const brands: { [key: string]: RetailBrand } = {
+  const allBrands: { [key: string]: RetailBrand } = {
     tanishq: {
       name: 'Tanishq (Tata)',
-      gold24k: base24k + 95,
-      gold22k: base22k + 90,
-      gold18k: base18k + 75,
-      premium: 90,
+      gold24k: base24k + 45,
+      gold22k: base22k + 45,
+      gold18k: base18k + 35,
+      premium: 45,
       description: 'Premium branding and certified purity (Tata group)'
     },
     grt: {
       name: 'GRT Jewellers',
-      gold24k: base24k + 5,
-      gold22k: base22k + 5,
-      gold18k: base18k + 5,
-      premium: 5,
-      description: 'Traditional South Indian patterns and transparent rates'
-    },
-    lalitha: {
-      name: 'Lalitha Jewellery',
       gold24k: base24k,
       gold22k: base22k,
       gold18k: base18k,
       premium: 0,
+      description: 'Traditional South Indian patterns and transparent rates'
+    },
+    lalitha: {
+      name: 'Lalitha Jewellery',
+      gold24k: base24k - 5,
+      gold22k: base22k - 5,
+      gold18k: base18k - 4,
+      premium: -5,
       description: 'Known for wholesale pricing and lowest making charges'
     },
-    atr: {
-      name: 'ATR Jewellers',
+    malabar: {
+      name: 'Malabar Gold & Diamonds',
       gold24k: base24k + 15,
       gold22k: base22k + 15,
       gold18k: base18k + 10,
       premium: 15,
-      description: 'Local boutique jewelry with hand-crafted custom designs'
+      description: 'Responsible sourcing and certified 916 purity assurances'
     },
     kalyan: {
       name: 'Kalyan Jewellers',
-      gold24k: base24k + 30,
-      gold22k: base22k + 30,
-      gold18k: base18k + 25,
-      premium: 30,
-      description: 'National presence with designer and bridal collections'
-    },
-    joyalukkas: {
-      name: 'Joyalukkas',
       gold24k: base24k + 25,
       gold22k: base22k + 25,
       gold18k: base18k + 20,
       premium: 25,
-      description: 'World-renowned collections and global standard retail rate'
+      description: 'National presence with designer and bridal collections'
     },
-    malabar: {
-      name: 'Malabar Gold & Diamonds',
+    joyalukkas: {
+      name: 'Joyalukkas',
       gold24k: base24k + 20,
       gold22k: base22k + 20,
       gold18k: base18k + 15,
       premium: 20,
-      description: 'Responsible sourcing and certified 916 purity assurances'
+      description: 'World-renowned collections and global standard retail rate'
     },
     avr: {
       name: 'AVR Swarna Mahal',
+      gold24k: base24k + 5,
+      gold22k: base22k + 5,
+      gold18k: base18k + 4,
+      premium: 5,
+      description: 'Regional brand popular in Tamil Nadu for high-finish details'
+    },
+    tbz: {
+      name: 'TBZ - Tribhovandas Bhimji Zaveri',
+      gold24k: base24k + 35,
+      gold22k: base22k + 35,
+      gold18k: base18k + 26,
+      premium: 35,
+      description: 'Iconic heritage brand of Western India famous for premium designs'
+    },
+    waman: {
+      name: 'Waman Hari Pethe',
       gold24k: base24k + 10,
       gold22k: base22k + 10,
       gold18k: base18k + 8,
       premium: 10,
-      description: 'Regional brand popular in Tamil Nadu for high-finish details'
+      description: 'Trusted Maharashtrian brand celebrating traditional jewelry'
+    },
+    pcj: {
+      name: 'PC Jeweller',
+      gold24k: base24k + 20,
+      gold22k: base22k + 20,
+      gold18k: base18k + 15,
+      premium: 20,
+      description: 'Popular national chain offering contemporary and classic items'
+    },
+    senco: {
+      name: 'Senco Gold & Diamonds',
+      gold24k: base24k + 15,
+      gold22k: base22k + 15,
+      gold18k: base18k + 11,
+      premium: 15,
+      description: 'Bengal heritage lightweight jewelry specialists with nation-wide outlets'
+    },
+    pcc: {
+      name: 'PC Chandra Jewellers',
+      gold24k: base24k + 25,
+      gold22k: base22k + 25,
+      gold18k: base18k + 19,
+      premium: 25,
+      description: 'Prestigious Eastern India group known for heavy designer sets'
+    },
+    bhima: {
+      name: 'Bhima Jewellers',
+      gold24k: base24k + 10,
+      gold22k: base22k + 10,
+      gold18k: base18k + 8,
+      premium: 10,
+      description: 'Kerala pioneer brand since 1925 with trusted purity standards'
+    },
+    ckc: {
+      name: 'C. Krishniah Chetty (CKC)',
+      gold24k: base24k + 40,
+      gold22k: base22k + 40,
+      gold18k: base18k + 30,
+      premium: 40,
+      description: 'Elite royal heritage jeweler of South India offering top luxury'
     }
   };
+
+  const cityBrands: { [key: string]: string[] } = {
+    chennai: ['grt', 'tanishq', 'lalitha', 'malabar', 'kalyan', 'joyalukkas', 'avr'],
+    mumbai: ['tanishq', 'tbz', 'waman', 'malabar', 'kalyan', 'joyalukkas'],
+    delhi: ['tanishq', 'pcj', 'kalyan', 'malabar', 'joyalukkas'],
+    bangalore: ['ckc', 'bhima', 'tanishq', 'grt', 'malabar', 'kalyan'],
+    kolkata: ['senco', 'pcc', 'tanishq', 'pcj'],
+    hyderabad: ['grt', 'tanishq', 'joyalukkas', 'malabar', 'kalyan'],
+    kerala: ['bhima', 'malabar', 'kalyan', 'joyalukkas']
+  };
+
+  const activeKeys = cityBrands[city] || cityBrands.chennai;
+  const brands: { [key: string]: RetailBrand } = {};
+  for (const key of activeKeys) {
+    if (allBrands[key]) {
+      brands[key] = allBrands[key];
+    }
+  }
 
   const us24k = parseFloat((spotGold / 31.1034768).toFixed(2));
   const us22k = parseFloat((us24k * (22 / 24)).toFixed(2));
   const us18k = parseFloat((us24k * (18 / 24)).toFixed(2));
+
+  const cityNameFormatted = city.charAt(0).toUpperCase() + city.slice(1);
 
   return {
     market: {
@@ -228,7 +320,7 @@ export const getFallbackRates = (overrides?: ManualOverrides): GoldRatesPayload 
     },
     retail: {
       associationRate: {
-        location: 'Chennai (Madras Jewellers Association)',
+        location: `${cityNameFormatted} Retail Rate`,
         gold24k: base24k,
         gold22k: base22k,
         gold18k: base18k,
@@ -300,7 +392,7 @@ export const fetchGoldRates = async (location?: string): Promise<GoldRatesPayloa
   // If overrides are enabled, bypass network and return override calculations
   if (overrides.enabled) {
     console.log('Using manual pricing overrides...');
-    return getFallbackRates(overrides);
+    return getFallbackRates(location, overrides);
   }
 
   const getApiUrl = () => {
@@ -355,13 +447,13 @@ export const fetchGoldRates = async (location?: string): Promise<GoldRatesPayloa
           dubai24k_aed: parseFloat(((spotPrice / ozToGrams) * 3.6725 * 1.015).toFixed(2)),
           dubai22k_aed: parseFloat((((spotPrice / ozToGrams) * 3.6725 * 1.015) * (22/24)).toFixed(2))
         };
-        return getFallbackRates(dynamicOverrides);
+        return getFallbackRates(location, dynamicOverrides);
       }
     } catch (directErr) {
       console.warn('Direct Yahoo Finance fetch blocked by CORS or network, returning fallback data:', directErr);
     }
     
-    return getFallbackRates();
+    return getFallbackRates(location);
   }
 };
 

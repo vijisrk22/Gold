@@ -460,8 +460,10 @@ app.get('/api/rates', async (req, res) => {
 
   const calculated = calculateRatesFromSpot(spotPrice, inrRate, aedRate);
 
-  // Establish primary baseline: GRT Direct -> GoodReturns Scraped -> Calculated Spot
-  const finalCity = grtDirect || cityScraped || calculated.chennai;
+  // Establish primary baseline: City Scraped -> GRT Direct (if Chennai) -> Calculated Spot
+  const finalCity = (city === 'chennai')
+    ? (grtDirect || cityScraped || calculated.chennai)
+    : (cityScraped || grtDirect || calculated.chennai);
   const finalDubai = dubaiScraped || calculated.dubai;
   
   // Compute silver rate
