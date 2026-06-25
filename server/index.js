@@ -32,18 +32,25 @@ async function scrapeGrtRates() {
   if (!html) return null;
 
   try {
-    const rate22kMatch = /\{\\"type\\":\\"GOLD\\",\\"weight\\":1,\\"unit\\":\\"G\\",\\"purity\\":\\"22 KT\\",\\"amount\\":(\d+)/.exec(html);
-    const rate24kMatch = /\{\\"type\\":\\"GOLD\\",\\"weight\\":1,\\"unit\\":\\"G\\",\\"purity\\":\\"24 KT\\",\\"amount\\":(\d+)/.exec(html);
-    const rate18kMatch = /\{\\"type\\":\\"GOLD\\",\\"weight\\":1,\\"unit\\":\\"G\\",\\"purity\\":\\"18 KT\\",\\"amount\\":(\d+)/.exec(html);
+    const match = /\\"gold_rate\\":\s*\[([\s\S]*?)\]/.exec(html);
+    if (match) {
+      const rawArrayStr = match[1];
+      const cleanJson = `[${rawArrayStr.replace(/\\"/g, '"')}]`;
+      const rates = JSON.parse(cleanJson);
+      
+      const gold22k = rates.find(r => r.type === 'GOLD' && r.purity === '22 KT')?.amount;
+      const gold24k = rates.find(r => r.type === 'GOLD' && r.purity === '24 KT')?.amount;
+      const gold18k = rates.find(r => r.type === 'GOLD' && r.purity === '18 KT')?.amount;
 
-    if (rate22kMatch && rate24kMatch) {
-      return {
-        gold24k: parseInt(rate24kMatch[1], 10),
-        gold22k: parseInt(rate22kMatch[1], 10),
-        gold18k: rate18kMatch ? parseInt(rate18kMatch[1], 10) : Math.round(parseInt(rate24kMatch[1], 10) * (18 / 24)),
-        timestamp: new Date().toISOString(),
-        source: 'GRT Jewellers Website (Direct)'
-      };
+      if (gold22k && gold24k) {
+        return {
+          gold24k: parseInt(gold24k, 10),
+          gold22k: parseInt(gold22k, 10),
+          gold18k: gold18k ? parseInt(gold18k, 10) : Math.round(parseInt(gold24k, 10) * (18 / 24)),
+          timestamp: new Date().toISOString(),
+          source: 'GRT Jewellers Website (Direct)'
+        };
+      }
     }
   } catch (error) {
     console.error('Failed to parse GRT jewellers direct rates:', error.message);
