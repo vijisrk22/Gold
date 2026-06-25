@@ -26,35 +26,11 @@ export const GoldCard: React.FC<GoldCardProps> = ({
   currency,
   badge,
   premium,
-  sparklineData = [100, 98, 101, 102, 99, 103, 101], // standard random history for sparkline
   inrEquivalent22k,
   inrEquivalent24k,
   isDubai = false,
   isUS = false,
 }) => {
-  // Generate SVG path for the sparkline
-  const generateSparklinePath = (data: number[]) => {
-    const width = 100;
-    const height = 30;
-    const max = Math.max(...data);
-    const min = Math.min(...data);
-    const range = max - min === 0 ? 1 : max - min;
-    
-    return data
-      .map((val, index) => {
-        const x = (index / (data.length - 1)) * width;
-        const y = height - ((val - min) / range) * height + 2; // minor offset to prevent cutting off
-        return `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
-      })
-      .join(' ');
-  };
-
-  const sparklinePath = generateSparklinePath(sparklineData);
-
-  // Compute color based on trend (last value vs first value)
-  const isTrendUp = sparklineData[sparklineData.length - 1] >= sparklineData[0];
-  const strokeColor = isTrendUp ? 'var(--color-up)' : 'var(--color-down)';
-  
   // Format local currency representation
   const formatCurrency = (val: number, cur: string) => {
     if (cur === 'INR') return `₹${val.toLocaleString()}`;
@@ -64,7 +40,7 @@ export const GoldCard: React.FC<GoldCardProps> = ({
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', minHeight: '260px' }}>
+    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', minHeight: '220px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
@@ -123,7 +99,7 @@ export const GoldCard: React.FC<GoldCardProps> = ({
         )}
       </div>
 
-      {/* Sparkline & Offsets (Footer Area) */}
+      {/* Offsets (Footer Area) */}
       <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px' }}>
         {/* Premium Markup */}
         <div>
@@ -137,21 +113,6 @@ export const GoldCard: React.FC<GoldCardProps> = ({
               Global Feed
             </span>
           )}
-        </div>
-
-        {/* Dynamic Sparkline Chart */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-          <svg width="100" height="35" style={{ overflow: 'visible' }}>
-            <path
-              d={sparklinePath}
-              fill="none"
-              stroke={strokeColor}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>7-day Trend</span>
         </div>
       </div>
     </div>
