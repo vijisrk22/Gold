@@ -16,6 +16,7 @@ import { StockMarketTicker } from './components/StockMarketTicker';
 import { GoldCard } from './components/GoldCard';
 import { Calculator } from './components/Calculator';
 import { RateEditor } from './components/RateEditor';
+import { ChitPlanner } from './components/ChitPlanner';
 
 const DAILY_TIPS = [
   "Look for the BIS Hallmark: Ensure your jewelry has the BIS logo, purity grade (e.g. 22K916), and the unique 6-digit HUID code before paying.",
@@ -386,6 +387,9 @@ export default function App() {
 
           </div>
         </div>
+
+        {/* 11-Month Gold Chit Comparison Section */}
+        {data && <ChitPlanner retail={data.retail} />}
 
         {/* Split Section: Calculator and Market Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '32px' }}>
