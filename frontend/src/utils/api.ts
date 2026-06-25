@@ -74,9 +74,34 @@ export interface RetailData {
   };
 }
 
+export interface PredictionDetails {
+  current: number;
+  pred1mo: number;
+  pred1y: number;
+  change1mo: number;
+  change1y: number;
+  rationale: string;
+}
+
+export interface MarketInsights {
+  explanation: string;
+  sentiment: string;
+  news: Array<{
+    title: string;
+    source: string;
+    time: string;
+    snippet: string;
+  }>;
+  predictions: {
+    gold: PredictionDetails;
+    silver: PredictionDetails;
+  };
+}
+
 export interface GoldRatesPayload {
   market: MarketData;
   retail: RetailData;
+  insights?: MarketInsights;
   meta: {
     serverTime: string;
     apiVersion: string;
@@ -269,7 +294,7 @@ export const saveOverrides = (overrides: ManualOverrides) => {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(overrides));
 };
 
-export const fetchGoldRates = async (): Promise<GoldRatesPayload> => {
+export const fetchGoldRates = async (location?: string): Promise<GoldRatesPayload> => {
   const overrides = getSavedOverrides();
   
   // If overrides are enabled, bypass network and return override calculations
@@ -279,17 +304,16 @@ export const fetchGoldRates = async (): Promise<GoldRatesPayload> => {
   }
 
   const getApiUrl = () => {
+    let baseUrl = '/api/rates';
     if (window.location.port === '5173') {
-      return 'http://localhost:5000/api/rates';
-    }
-    // Mobile/native container check (runs on localhost or file:// protocol without dev ports)
-    if (
+      baseUrl = 'http://localhost:5000/api/rates';
+    } else if (
       (window.location.origin.includes('localhost') && window.location.port !== '5000') ||
       window.location.protocol === 'file:'
     ) {
-      return 'https://goldrate.azurewebsites.net/api/rates';
+      baseUrl = 'https://goldrate.azurewebsites.net/api/rates';
     }
-    return '/api/rates';
+    return location ? `${baseUrl}?location=${encodeURIComponent(location)}` : baseUrl;
   };
 
   try {
@@ -338,5 +362,59 @@ export const fetchGoldRates = async (): Promise<GoldRatesPayload> => {
     }
     
     return getFallbackRates();
+  }
+};
+
+export interface HistoricalRate {
+  date: string;
+  gold24k: number;
+  gold22k: number;
+  silver: number;
+}
+
+export const fetchHistoricalRates = async (range: '1mo' | '1y'): Promise<HistoricalRate[]> => {
+  const getApiUrl = () => {
+    let baseUrl = '/api/history';
+    if (window.location.port === '5173') {
+      baseUrl = 'http://localhost:5000/api/history';
+    } else if (
+      (window.location.origin.includes('localhost') && window.location.port !== '5000') ||
+      window.location.protocol === 'file:'
+    ) {
+      baseUrl = 'https://goldrate.azurewebsites.net/api/history';
+    }
+    return `${baseUrl}?range=${range}`;
+  };
+
+  try {
+    const res = await fetch(getApiUrl());
+    if (res.ok) {
+      return await res.json();
+    }
+    throw new Error('Server returned error status for history');
+  } catch (err) {
+    console.warn('API history server unavailable, returning simulated local history:', err);
+    const points = range === '1y' ? 12 : 30;
+    const history: HistoricalRate[] = [];
+    const baseGold = 12955;
+    const baseSilver = 230;
+    const today = new Date();
+    for (let i = points - 1; i >= 0; i--) {
+      const date = new Date();
+      if (range === '1y') {
+        date.setMonth(today.getMonth() - i);
+      } else {
+        date.setDate(today.getDate() - i);
+      }
+      const factor = 1 + (i * -0.003) + (Math.sin(i) * 0.015);
+      const gold22k = Math.round(baseGold * factor);
+      history.push({
+        date: date.toISOString().split('T')[0],
+        gold24k: Math.round(gold22k * (24 / 22)),
+        gold22k,
+        silver: Math.round(baseSilver * factor)
+      });
+    }
+    return history;
   }
 };

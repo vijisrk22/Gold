@@ -58,17 +58,13 @@ async function scrapeGrtRates() {
   return null;
 }
 
-// Scrape Chennai Gold rates from GoodReturns
-async function scrapeChennaiRates() {
-  const url = 'https://www.goodreturns.in/gold-rates/chennai.html';
+// Scrape Gold rates for a specific city from GoodReturns
+async function scrapeCityRates(city) {
+  const url = `https://www.goodreturns.in/gold-rates/${city}.html`;
   const html = await fetchHtml(url);
   if (!html) return null;
 
   try {
-    // Look for the first table which contains the 24K, 22K, 18K rates per gram
-    // Target matches like:
-    // <tr> <td>1</td> <td> &#x20b9;14,335 ... </td> <td> &#x20b9;13,140 ... </td>
-    // We match the 24K, 22K, and 18K values
     const rowRegex = /<tr>\s*<td>1<\/td>\s*<td>\s*&#x20b9;([\d,]+)[\s\S]*?<\/td>\s*<td>\s*&#x20b9;([\d,]+)[\s\S]*?<\/td>\s*<td>\s*&#x20b9;([\d,]+)/i;
     const match = rowRegex.exec(html);
 
@@ -78,31 +74,29 @@ async function scrapeChennaiRates() {
         gold22k: parseInt(match[2].replace(/,/g, ''), 10),
         gold18k: parseInt(match[3].replace(/,/g, ''), 10),
         timestamp: new Date().toISOString(),
-        source: 'GoodReturns (Chennai Scraped)'
+        source: `GoodReturns (${city.toUpperCase()} Scraped)`
       };
     }
   } catch (error) {
-    console.error('Failed to parse Chennai gold rates:', error.message);
+    console.error(`Failed to parse ${city} gold rates:`, error.message);
   }
   return null;
 }
 
-// Scrape Chennai Silver rates from GoodReturns
-async function scrapeChennaiSilverRate() {
-  const url = 'https://www.goodreturns.in/silver-rates/chennai.html';
+// Scrape Silver rates for a specific city from GoodReturns
+async function scrapeCitySilverRate(city) {
+  const url = `https://www.goodreturns.in/silver-rates/${city}.html`;
   const html = await fetchHtml(url);
   if (!html) return null;
 
   try {
-    // Silver table contains:
-    // <tr> <td>1</td> <td> &#x20b9;230 ... </td>
     const silverRegex = /<tr>\s*<td>1<\/td>\s*<td>\s*&#x20b9;([\d,.]+)/i;
     const match = silverRegex.exec(html);
     if (match) {
       return parseFloat(match[1].replace(/,/g, ''));
     }
   } catch (error) {
-    console.error('Failed to parse Chennai silver rate:', error.message);
+    console.error(`Failed to parse ${city} silver rate:`, error.message);
   }
   return null;
 }
@@ -210,57 +204,13 @@ function calculateRatesFromSpot(spotUsd, usdInr, usdAed) {
   };
 }
 
-app.get('/api/rates', async (req, res) => {
-  console.log('Fetching live gold rates...');
-  
-  // 1. Fetch live stock market indexes in parallel
-  const [spotGold, spotSilver, usdInr, usdAed, goldBees, silverBees] = await Promise.all([
-    fetchYahooFinanceIndex('GC=F'),
-    fetchYahooFinanceIndex('SI=F'),
-    fetchYahooFinanceIndex('INR=X'),
-    fetchYahooFinanceIndex('AED=X'),
-    fetchYahooFinanceIndex('GOLDBEES.NS'),
-    fetchYahooFinanceIndex('SILVERBEES.NS')
-  ]);
-
-  // 2. Attempt scraping
-  const [grtDirect, chennaiScraped, dubaiScraped, silverScraped] = await Promise.all([
-    scrapeGrtRates(),
-    scrapeChennaiRates(),
-    scrapeDubaiRates(),
-    scrapeChennaiSilverRate()
-  ]);
-
-  // Fallbacks if scraping fails
-  const spotPrice = spotGold ? spotGold.price : 4010.0;
-  const inrRate = usdInr ? usdInr.price : 94.2;
-  const aedRate = usdAed ? usdAed.price : 3.67;
-
-  const calculated = calculateRatesFromSpot(spotPrice, inrRate, aedRate);
-
-  // Establish primary baseline: GRT Direct -> GoodReturns Scraped -> Calculated Spot
-  const finalChennai = grtDirect || chennaiScraped || calculated.chennai;
-  const finalDubai = dubaiScraped || calculated.dubai;
-  
-  // Compute silver rate
-  let finalSilver = silverScraped;
-  if (!finalSilver) {
-    // Fallback: Spot Silver (oz) -> convert to grams * Exchange Rate + 10% duty + 3% GST
-    const silverSpotGram = spotSilver ? (spotSilver.price / 31.1034768) : 30.0 / 31.1034768;
-    finalSilver = Math.round(silverSpotGram * inrRate * 1.10 * 1.03);
-  }
-
-  // 3. Compute retail brands (adding premiums to the Chennai baseline rate)
-  const base22k = finalChennai.gold22k;
-  const base24k = finalChennai.gold24k;
-  const base18k = finalChennai.gold18k;
-
-  const brands = {
+function getBrandsForLocation(city, base24k, base22k, base18k) {
+  const allBrands = {
     tanishq: {
       name: 'Tanishq (Tata)',
-      gold24k: base24k + 39,
+      gold24k: base24k + 45,
       gold22k: base22k + 45,
-      gold18k: base18k + 30,
+      gold18k: base18k + 35,
       premium: 45,
       description: 'Premium branding and certified purity (Tata group)'
     },
@@ -280,13 +230,13 @@ app.get('/api/rates', async (req, res) => {
       premium: -5,
       description: 'Known for wholesale pricing and lowest making charges'
     },
-    atr: {
-      name: 'ATR Jewellers',
-      gold24k: base24k + 10,
-      gold22k: base22k + 10,
-      gold18k: base18k + 8,
-      premium: 10,
-      description: 'Local boutique jewelry with hand-crafted custom designs'
+    malabar: {
+      name: 'Malabar Gold & Diamonds',
+      gold24k: base24k + 15,
+      gold22k: base22k + 15,
+      gold18k: base18k + 10,
+      premium: 15,
+      description: 'Responsible sourcing and certified 916 purity assurances'
     },
     kalyan: {
       name: 'Kalyan Jewellers',
@@ -304,14 +254,6 @@ app.get('/api/rates', async (req, res) => {
       premium: 20,
       description: 'World-renowned collections and global standard retail rate'
     },
-    malabar: {
-      name: 'Malabar Gold & Diamonds',
-      gold24k: base24k + 15,
-      gold22k: base22k + 15,
-      gold18k: base18k + 10,
-      premium: 15,
-      description: 'Responsible sourcing and certified 916 purity assurances'
-    },
     avr: {
       name: 'AVR Swarna Mahal',
       gold24k: base24k + 5,
@@ -319,10 +261,224 @@ app.get('/api/rates', async (req, res) => {
       gold18k: base18k + 4,
       premium: 5,
       description: 'Regional brand popular in Tamil Nadu for high-finish details'
+    },
+    tbz: {
+      name: 'TBZ - Tribhovandas Bhimji Zaveri',
+      gold24k: base24k + 35,
+      gold22k: base22k + 35,
+      gold18k: base18k + 26,
+      premium: 35,
+      description: 'Iconic heritage brand of Western India famous for premium designs'
+    },
+    waman: {
+      name: 'Waman Hari Pethe',
+      gold24k: base24k + 10,
+      gold22k: base22k + 10,
+      gold18k: base18k + 8,
+      premium: 10,
+      description: 'Trusted Maharashtrian brand celebrating traditional jewelry'
+    },
+    pcj: {
+      name: 'PC Jeweller',
+      gold24k: base24k + 20,
+      gold22k: base22k + 20,
+      gold18k: base18k + 15,
+      premium: 20,
+      description: 'Popular national chain offering contemporary and classic items'
+    },
+    senco: {
+      name: 'Senco Gold & Diamonds',
+      gold24k: base24k + 15,
+      gold22k: base22k + 15,
+      gold18k: base18k + 11,
+      premium: 15,
+      description: 'Bengal heritage lightweight jewelry specialists with nation-wide outlets'
+    },
+    pcc: {
+      name: 'PC Chandra Jewellers',
+      gold24k: base24k + 25,
+      gold22k: base22k + 25,
+      gold18k: base18k + 19,
+      premium: 25,
+      description: 'Prestigious Eastern India group known for heavy designer sets'
+    },
+    bhima: {
+      name: 'Bhima Jewellers',
+      gold24k: base24k + 10,
+      gold22k: base22k + 10,
+      gold18k: base18k + 8,
+      premium: 10,
+      description: 'Kerala pioneer brand since 1925 with trusted purity standards'
+    },
+    ckc: {
+      name: 'C. Krishniah Chetty (CKC)',
+      gold24k: base24k + 40,
+      gold22k: base22k + 40,
+      gold18k: base18k + 30,
+      premium: 40,
+      description: 'Elite royal heritage jeweler of South India offering top luxury'
     }
   };
 
-  // 4. US Gold rates (derived directly from spot price)
+  const cityBrands = {
+    chennai: ['grt', 'tanishq', 'lalitha', 'malabar', 'kalyan', 'joyalukkas', 'avr'],
+    mumbai: ['tanishq', 'tbz', 'waman', 'malabar', 'kalyan', 'joyalukkas'],
+    delhi: ['tanishq', 'pcj', 'kalyan', 'malabar', 'joyalukkas'],
+    bangalore: ['ckc', 'bhima', 'tanishq', 'grt', 'malabar', 'kalyan'],
+    kolkata: ['senco', 'pcc', 'tanishq', 'pcj'],
+    hyderabad: ['grt', 'tanishq', 'joyalukkas', 'malabar', 'kalyan'],
+    kerala: ['bhima', 'malabar', 'kalyan', 'joyalukkas']
+  };
+
+  const activeKeys = cityBrands[city] || cityBrands.chennai;
+  const result = {};
+  for (const key of activeKeys) {
+    if (allBrands[key]) {
+      result[key] = allBrands[key];
+    }
+  }
+  return result;
+}
+
+function generateMarketInsights(spotGold, spotSilver, usdInr) {
+  const goldChange = spotGold ? spotGold.changePercent : 0;
+  const silverChange = spotSilver ? spotSilver.changePercent : 0;
+  const rupeeChange = usdInr ? usdInr.changePercent : 0;
+  
+  let explanation = '';
+  let sentiment = 'Neutral';
+  let goldDirection = goldChange >= 0 ? 'higher' : 'lower';
+  let rupeeDirection = rupeeChange >= 0 ? 'depreciated' : 'appreciated';
+
+  if (Math.abs(goldChange) < 0.2 && Math.abs(rupeeChange) < 0.2) {
+    explanation = "Gold prices are trading flat today. Steady international prices and flat domestic currency rates are keeping prices stable.";
+    sentiment = 'Stable';
+  } else if (goldChange >= 0.2 && rupeeChange >= 0.1) {
+    explanation = `Gold prices surged higher today due to a simultaneous rise in international spot gold (+${goldChange.toFixed(2)}%) and a weakening Indian Rupee (+${rupeeChange.toFixed(2)}% vs USD), which pushes the landed cost of imported bullion higher.`;
+    sentiment = 'Bullish';
+  } else if (goldChange < -0.2 && rupeeChange > 0.1) {
+    explanation = `Domestic retail prices remained resilient today. While international spot gold fell by ${goldChange.toFixed(2)}%, a weakening Indian Rupee (+${rupeeChange.toFixed(2)}%) cushioned the fall, preventing a major domestic price drop.`;
+    sentiment = 'Mixed';
+  } else if (goldChange >= 0.2 && rupeeChange < -0.1) {
+    explanation = `Gains in international gold (+${goldChange.toFixed(2)}%) were partially offset for Indian buyers due to a strengthening Rupee (-${Math.abs(rupeeChange).toFixed(2)}% vs USD), making the retail price increase moderate.`;
+    sentiment = 'Moderately Bullish';
+  } else if (goldChange < -0.2 && rupeeChange < -0.1) {
+    explanation = `Gold prices corrected significantly today as a strong Indian Rupee (-${Math.abs(rupeeChange).toFixed(2)}%) combined with international profit-booking (-${Math.abs(goldChange).toFixed(2)}%) to bring welcome relief to retail buyers.`;
+    sentiment = 'Bearish';
+  } else if (Math.abs(goldChange) >= 0.2) {
+    explanation = `Price movement is primarily driven by global markets today. Spot gold traded ${goldDirection} by ${Math.abs(goldChange).toFixed(2)}% amid macroeconomic shifts, while the USD/INR remained relatively stable.`;
+    sentiment = goldChange >= 0 ? 'Bullish' : 'Bearish';
+  } else {
+    explanation = `Domestic prices shifted today due to the Indian Rupee which ${rupeeDirection} by ${Math.abs(rupeeChange).toFixed(2)}% against the US Dollar, altering the local cost of gold imports while global spot rates held steady.`;
+    sentiment = rupeeChange >= 0 ? 'Bullish' : 'Bearish';
+  }
+
+  const news = [
+    {
+      title: goldChange >= 0 ? "Global Gold Rallies on Lower Rate Hopes" : "Gold Pulls Back as Investors Lock in Profits",
+      source: "Aurum Live Research",
+      time: "2 hours ago",
+      snippet: `Spot gold (XAU/USD) traded around $${spotGold ? spotGold.price.toFixed(2) : '4000'} per ounce, registering a ${goldChange.toFixed(2)}% daily change as traders analyze global economic indicators.`
+    },
+    {
+      title: `Rupee Trades at ${usdInr ? usdInr.price.toFixed(3) : '94.3'} as Oil Prices and DXY Shift`,
+      source: "Forex Live India",
+      time: "4 hours ago",
+      snippet: `The Indian currency moved by ${rupeeChange.toFixed(2)}% against the greenback today, directly adjusting the landing import price of yellow metals across Indian refineries.`
+    },
+    {
+      title: "Silver ETF Holdings Jump Amid Industrial Demand",
+      source: "Commodity Watch",
+      time: "6 hours ago",
+      snippet: `Silver BeES and physical silver retail rates saw action. Local silver prices are holding at ${silverChange >= 0 ? 'elevated' : 'stable'} levels with a daily change of ${silverChange.toFixed(2)}%.`
+    }
+  ];
+
+  return {
+    explanation,
+    sentiment,
+    news
+  };
+}
+
+function generatePredictions(baseGold22k, baseSilver) {
+  const gold1mo = Math.round(baseGold22k * (1 + 0.008));
+  const gold1y = Math.round(baseGold22k * (1 + 0.095));
+  const silver1mo = Math.round(baseSilver * (1 + 0.012));
+  const silver1y = Math.round(baseSilver * (1 + 0.115));
+  
+  return {
+    gold: {
+      current: baseGold22k,
+      pred1mo: gold1mo,
+      pred1y: gold1y,
+      change1mo: 0.8,
+      change1y: 9.5,
+      rationale: "Supported by consistent domestic Rupee depreciation and long-term wedding season jewelry demand."
+    },
+    silver: {
+      current: baseSilver,
+      pred1mo: silver1mo,
+      pred1y: silver1y,
+      change1mo: 1.2,
+      change1y: 11.5,
+      rationale: "Driven by green energy transition industrial usage (solar panels, electronics) outpacing supply growth."
+    }
+  };
+}
+
+app.get('/api/rates', async (req, res) => {
+  const location = (req.query.location || 'chennai').toLowerCase();
+  const validCities = ['chennai', 'mumbai', 'delhi', 'bangalore', 'kolkata', 'hyderabad', 'kerala'];
+  const city = validCities.includes(location) ? location : 'chennai';
+
+  console.log(`Fetching live rates for location: ${city}...`);
+  
+  // 1. Fetch live stock market indexes in parallel
+  const [spotGold, spotSilver, usdInr, usdAed, goldBees, silverBees] = await Promise.all([
+    fetchYahooFinanceIndex('GC=F'),
+    fetchYahooFinanceIndex('SI=F'),
+    fetchYahooFinanceIndex('INR=X'),
+    fetchYahooFinanceIndex('AED=X'),
+    fetchYahooFinanceIndex('GOLDBEES.NS'),
+    fetchYahooFinanceIndex('SILVERBEES.NS')
+  ]);
+
+  // 2. Attempt scraping
+  const isChennai = city === 'chennai';
+  const [grtDirect, cityScraped, dubaiScraped, silverScraped] = await Promise.all([
+    isChennai ? scrapeGrtRates() : Promise.resolve(null),
+    scrapeCityRates(city),
+    scrapeDubaiRates(),
+    scrapeCitySilverRate(city)
+  ]);
+
+  // Fallbacks if scraping fails
+  const spotPrice = spotGold ? spotGold.price : 4010.0;
+  const inrRate = usdInr ? usdInr.price : 94.2;
+  const aedRate = usdAed ? usdAed.price : 3.67;
+
+  const calculated = calculateRatesFromSpot(spotPrice, inrRate, aedRate);
+
+  // Establish primary baseline: GRT Direct -> GoodReturns Scraped -> Calculated Spot
+  const finalCity = grtDirect || cityScraped || calculated.chennai;
+  const finalDubai = dubaiScraped || calculated.dubai;
+  
+  // Compute silver rate
+  let finalSilver = silverScraped;
+  if (!finalSilver) {
+    const silverSpotGram = spotSilver ? (spotSilver.price / 31.1034768) : 30.0 / 31.1034768;
+    finalSilver = Math.round(silverSpotGram * inrRate * 1.10 * 1.03);
+  }
+
+  // 3. Compute retail brands dynamically based on location
+  const base22k = finalCity.gold22k;
+  const base24k = finalCity.gold24k;
+  const base18k = finalCity.gold18k;
+
+  const brands = getBrandsForLocation(city, base24k, base22k, base18k);
+
+  // 4. US Gold rates
   const usGrams24k = parseFloat((spotPrice / 31.1034768).toFixed(2));
   const usGrams22k = parseFloat((usGrams24k * (22 / 24)).toFixed(2));
   const usGrams18k = parseFloat((usGrams24k * (18 / 24)).toFixed(2));
@@ -342,6 +498,9 @@ app.get('/api/rates', async (req, res) => {
     source: 'COMEX Spot Market'
   };
 
+  const insights = generateMarketInsights(spotGold, spotSilver, usdInr);
+  const predictions = generatePredictions(base22k, finalSilver);
+
   // Compile final API payload
   res.json({
     market: {
@@ -358,13 +517,13 @@ app.get('/api/rates', async (req, res) => {
     },
     retail: {
       associationRate: {
-        location: 'Chennai (Madras Jewellers Association)',
+        location: `${city.charAt(0).toUpperCase() + city.slice(1)} Retail Rate`,
         gold24k: base24k,
         gold22k: base22k,
         gold18k: base18k,
         silver: finalSilver,
-        isScraped: !!chennaiScraped,
-        timestamp: finalChennai.timestamp || new Date().toISOString()
+        isScraped: !!cityScraped,
+        timestamp: finalCity.timestamp || new Date().toISOString()
       },
       dubai: {
         currency: 'AED',
@@ -378,12 +537,120 @@ app.get('/api/rates', async (req, res) => {
       us: usGold,
       brands
     },
+    insights: {
+      ...insights,
+      predictions
+    },
     meta: {
       serverTime: new Date().toISOString(),
-      apiVersion: '1.0.0'
+      apiVersion: '1.1.0'
     }
   });
 });
+
+app.get('/api/history', async (req, res) => {
+  const range = req.query.range === '1y' ? '1y' : '1mo';
+  const interval = range === '1y' ? '1wk' : '1d';
+  
+  console.log(`Fetching Yahoo Finance history (range: ${range}, interval: ${interval})...`);
+  
+  const [goldChart, silverChart, usdInrChart] = await Promise.all([
+    fetchYahooHistory('GC=F', range, interval),
+    fetchYahooHistory('SI=F', range, interval),
+    fetchYahooHistory('INR=X', range, interval)
+  ]);
+
+  if (!goldChart || !usdInrChart) {
+    return res.json(getMockHistory(range));
+  }
+
+  const inrMap = new Map(usdInrChart.map(p => [p.date, p.price]));
+  const silverMap = new Map((silverChart || []).map(p => [p.date, p.price]));
+
+  const merged = [];
+  let lastInr = inrMap.values().next().value || 94.2;
+  let lastSilverSpot = silverMap.values().next().value || 30.0;
+
+  for (const goldPoint of goldChart) {
+    const date = goldPoint.date;
+    const spotGold = goldPoint.price;
+    const usdInr = inrMap.has(date) ? inrMap.get(date) : lastInr;
+    lastInr = usdInr;
+
+    const spotSilver = silverMap.has(date) ? silverMap.get(date) : lastSilverSpot;
+    lastSilverSpot = spotSilver;
+
+    const ozToGrams = 31.1034768;
+    const gold24k = Math.round((spotGold / ozToGrams) * usdInr * 1.15 * 1.03);
+    const gold22k = Math.round(gold24k * (22 / 24));
+    const silver = Math.round((spotSilver / ozToGrams) * usdInr * 1.10 * 1.03);
+
+    merged.push({
+      date,
+      gold24k,
+      gold22k,
+      silver
+    });
+  }
+
+  res.json(merged);
+});
+
+async function fetchYahooHistory(symbol, range, interval) {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+    if (response.status === 200) {
+      const data = await response.json();
+      const result = data.chart.result[0];
+      const timestamps = result.timestamp;
+      const closes = result.indicators.quote[0].close;
+      if (timestamps && closes) {
+        return timestamps.map((ts, idx) => ({
+          date: new Date(ts * 1000).toISOString().split('T')[0],
+          price: closes[idx]
+        })).filter(d => d.price !== null);
+      }
+    }
+  } catch (error) {
+    console.error(`Failed to fetch Yahoo Finance History for ${symbol}:`, error.message);
+  }
+  return null;
+}
+
+function getMockHistory(range) {
+  const points = range === '1y' ? 12 : 30;
+  const history = [];
+  const baseGold = 12955;
+  const baseSilver = 230;
+  
+  const today = new Date();
+  for (let i = points - 1; i >= 0; i--) {
+    const date = new Date();
+    if (range === '1y') {
+      date.setMonth(today.getMonth() - i);
+    } else {
+      date.setDate(today.getDate() - i);
+    }
+    
+    const factor = 1 + (i * -0.003) + (Math.sin(i) * 0.015);
+    const gold22k = Math.round(baseGold * factor);
+    const gold24k = Math.round(gold22k * (24 / 22));
+    const silver = Math.round(baseSilver * factor);
+    
+    history.push({
+      date: date.toISOString().split('T')[0],
+      gold24k,
+      gold22k,
+      silver
+    });
+  }
+  return history;
+}
 
 const path = require('path');
 

@@ -112,6 +112,76 @@ const BRAND_SCHEMES: { [key: string]: SchemeDetails } = {
     trustBadge: 'Custom Boutique',
     pros: ['100% bonus installment', '10% wastage waiver', 'Ideal for fully customized designs'],
     cons: ['No gold rate lock-in (cash scheme)', 'Fewer ready-made items to choose from']
+  },
+  tbz: {
+    name: 'TBZ Kalpavruksha Scheme',
+    type: 'cash',
+    bonusFraction: 1.0, 
+    maxWaiverPct: 0.0,  
+    avgWastagePct: 0.14, 
+    trustBadge: 'Heritage Artistry',
+    pros: ['100% bonus on 12th installment', 'Valid for premium bridal diamond & gold collections', 'Iconic designer trust'],
+    cons: ['No weight locking (cash based)', 'Making charges are on the higher side']
+  },
+  waman: {
+    name: 'Waman Hari Pethe Sanchay Scheme',
+    type: 'weight',
+    bonusFraction: 0.0,
+    maxWaiverPct: 0.14,
+    avgWastagePct: 0.09,
+    trustBadge: 'Maharashtrian Legacy',
+    pros: ['Gold weight locked monthly', 'Specialized Maharashtrian design waivers', 'Highly trusted local brand'],
+    cons: ['No direct cash bonus', 'Fewer showrooms outside Maharashtra']
+  },
+  pcj: {
+    name: 'PC Jeweller Jewel Mangal',
+    type: 'cash',
+    bonusFraction: 1.0,
+    maxWaiverPct: 0.0,
+    avgWastagePct: 0.12,
+    trustBadge: 'Modern Flexi',
+    pros: ['Flexible monthly payment options', 'End-of-term cash discount equivalent to 1 month', 'Nationwide exchange networks'],
+    cons: ['No rate lock-in protection', 'Making charges apply fully']
+  },
+  senco: {
+    name: 'Senco Swarna Yojana',
+    type: 'weight',
+    bonusFraction: 0.0,
+    maxWaiverPct: 0.18,
+    avgWastagePct: 0.10,
+    trustBadge: 'Lightweight Specialist',
+    pros: ['Monthly weight locking against inflation', 'Up to 18% making charge waiver', 'Excellent light, modern designs'],
+    cons: ['No cash installment bonus', 'Showrooms primarily in East/North India']
+  },
+  pcc: {
+    name: 'PC Chandra Dhanvriddhi Scheme',
+    type: 'weight',
+    bonusFraction: 0.0,
+    maxWaiverPct: 0.15,
+    avgWastagePct: 0.12,
+    trustBadge: 'Bengal Craftsmanship',
+    pros: ['Gold rate locked upon installment payment', 'Waivers on premium handcrafted filigree works', 'Excellent buyback guarantees'],
+    cons: ['No cash bonus', 'Higher making charges on custom heavy ornaments']
+  },
+  bhima: {
+    name: 'Bhima Golden Key Scheme',
+    type: 'weight',
+    bonusFraction: 0.0,
+    maxWaiverPct: 0.18,
+    avgWastagePct: 0.10,
+    trustBadge: 'Kerala Pioneer since 1925',
+    pros: ['Full weight lock-in against Rupee drop', '18% wastage waiver covers standard ornaments completely', 'Highest purity reputation'],
+    cons: ['No direct cash bonus payout']
+  },
+  ckc: {
+    name: 'CKC Paper Gold & Savings Scheme',
+    type: 'weight',
+    bonusFraction: 0.0,
+    maxWaiverPct: 0.20,
+    avgWastagePct: 0.16,
+    trustBadge: 'Royal Jeweller since 1869',
+    pros: ['Weight lock-in protection', 'High making charge waiver up to 20% on royal heritage collections', 'Certified conflict-free gems'],
+    cons: ['No cash bonus', 'Higher base premium than average market rate']
   }
 };
 

@@ -8,7 +8,8 @@ import {
   Sun, 
   Moon, 
   ArrowUpRight,
-  Info
+  Info,
+  MapPin
 } from 'lucide-react';
 import { fetchGoldRates, getSavedOverrides } from './utils/api';
 import type { GoldRatesPayload } from './utils/api';
@@ -17,6 +18,9 @@ import { GoldCard } from './components/GoldCard';
 import { Calculator } from './components/Calculator';
 import { RateEditor } from './components/RateEditor';
 import { ChitPlanner } from './components/ChitPlanner';
+import { HistoricalChart } from './components/HistoricalChart';
+import { MarketInsights } from './components/MarketInsights';
+import { InvestmentComparison } from './components/InvestmentComparison';
 
 const DAILY_TIPS = [
   "Look for the BIS Hallmark: Ensure your jewelry has the BIS logo, purity grade (e.g. 22K916), and the unique 6-digit HUID code before paying.",
@@ -36,6 +40,7 @@ export default function App() {
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   const [tipIndex, setTipIndex] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [location, setLocation] = useState<string>('chennai');
 
   // Set the current tip index based on day of the month
   useEffect(() => {
@@ -43,10 +48,10 @@ export default function App() {
     setTipIndex(day % DAILY_TIPS.length);
   }, []);
 
-  const loadRates = async () => {
+  const loadRates = async (currentLoc = location) => {
     setIsRefreshing(true);
     try {
-      const payload = await fetchGoldRates();
+      const payload = await fetchGoldRates(currentLoc);
       setData(payload);
       setLastRefreshed(new Date());
       setError(null);
@@ -59,11 +64,14 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadRates();
-    // Poll every 30 seconds
-    const interval = setInterval(loadRates, 30000);
+    loadRates(location);
+  }, [location]);
+
+  // Poll every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => loadRates(location), 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [location]);
 
   // Theme Toggler
   const toggleTheme = () => {
@@ -123,6 +131,32 @@ export default function App() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Location Selector Dropdown */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px 12px' }}>
+              <MapPin size={14} style={{ color: 'var(--gold-primary)' }} />
+              <select 
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="chennai" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Chennai</option>
+                <option value="mumbai" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Mumbai</option>
+                <option value="delhi" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Delhi</option>
+                <option value="bangalore" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Bangalore</option>
+                <option value="kolkata" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Kolkata</option>
+                <option value="hyderabad" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Hyderabad</option>
+                <option value="kerala" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Kerala</option>
+              </select>
+            </div>
+
             {showManualBadge ? (
               <span className="offline-badge" style={{ fontSize: '0.75rem', padding: '6px 12px' }}>Custom Override active</span>
             ) : data?.retail.associationRate.isScraped ? (
@@ -140,10 +174,10 @@ export default function App() {
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
-            <RateEditor onSave={loadRates} />
+            <RateEditor onSave={() => loadRates(location)} />
 
             <button 
-              onClick={loadRates}
+              onClick={() => loadRates(location)}
               className="glass-panel"
               style={{ 
                 padding: '10px 16px', 
@@ -183,8 +217,8 @@ export default function App() {
           <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '160px', background: 'linear-gradient(135deg, rgba(7, 10, 19, 0.9) 0%, rgba(234, 179, 8, 0.05) 100%)' }}>
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--gold-primary)', fontWeight: 700, letterSpacing: '0.05em' }}>OFFICIAL BENCHMARK PRICE</span>
-              <h2 style={{ fontSize: '1.6rem', marginTop: '4px' }}>Chennai Jewellers Association</h2>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Madras Gold Merchants standard rate (BIS 916)</p>
+              <h2 style={{ fontSize: '1.6rem', marginTop: '4px' }}>{location.charAt(0).toUpperCase() + location.slice(1)} Retail Rate</h2>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Local board benchmark standard rate (BIS 916)</p>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '16px' }}>
               <div>
@@ -261,101 +295,23 @@ export default function App() {
             
             {data && (
               <>
-                <GoldCard 
-                  title="Tanishq"
-                  description={data.retail.brands.tanishq.description}
-                  gold22k={data.retail.brands.tanishq.gold22k}
-                  gold24k={data.retail.brands.tanishq.gold24k}
-                  gold18k={data.retail.brands.tanishq.gold18k}
-                  currency="INR"
-                  badge="Tata Trust"
-                  premium={data.retail.brands.tanishq.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.tanishq.gold22k, 'up')}
-                />
-                
-                <GoldCard 
-                  title="GRT Jewellers"
-                  description={data.retail.brands.grt.description}
-                  gold22k={data.retail.brands.grt.gold22k}
-                  gold24k={data.retail.brands.grt.gold24k}
-                  gold18k={data.retail.brands.grt.gold18k}
-                  currency="INR"
-                  badge="Heritage"
-                  premium={data.retail.brands.grt.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.grt.gold22k, 'volatile')}
-                />
-
-                <GoldCard 
-                  title="Lalitha Jewellery"
-                  description={data.retail.brands.lalitha.description}
-                  gold22k={data.retail.brands.lalitha.gold22k}
-                  gold24k={data.retail.brands.lalitha.gold24k}
-                  gold18k={data.retail.brands.lalitha.gold18k}
-                  currency="INR"
-                  badge="Lowest VA"
-                  premium={data.retail.brands.lalitha.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.lalitha.gold22k, 'down')}
-                />
-
-                <GoldCard 
-                  title="ATR Jewellers"
-                  description={data.retail.brands.atr.description}
-                  gold22k={data.retail.brands.atr.gold22k}
-                  gold24k={data.retail.brands.atr.gold24k}
-                  gold18k={data.retail.brands.atr.gold18k}
-                  currency="INR"
-                  badge="Boutique"
-                  premium={data.retail.brands.atr.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.atr.gold22k, 'volatile')}
-                />
-
-                <GoldCard 
-                  title="Kalyan Jewellers"
-                  description={data.retail.brands.kalyan.description}
-                  gold22k={data.retail.brands.kalyan.gold22k}
-                  gold24k={data.retail.brands.kalyan.gold24k}
-                  gold18k={data.retail.brands.kalyan.gold18k}
-                  currency="INR"
-                  badge="Bridal"
-                  premium={data.retail.brands.kalyan.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.kalyan.gold22k, 'up')}
-                />
-
-                <GoldCard 
-                  title="Joyalukkas"
-                  description={data.retail.brands.joyalukkas.description}
-                  gold22k={data.retail.brands.joyalukkas.gold22k}
-                  gold24k={data.retail.brands.joyalukkas.gold24k}
-                  gold18k={data.retail.brands.joyalukkas.gold18k}
-                  currency="INR"
-                  badge="Global"
-                  premium={data.retail.brands.joyalukkas.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.joyalukkas.gold22k, 'down')}
-                />
-
-                <GoldCard 
-                  title="Malabar Gold"
-                  description={data.retail.brands.malabar.description}
-                  gold22k={data.retail.brands.malabar.gold22k}
-                  gold24k={data.retail.brands.malabar.gold24k}
-                  gold18k={data.retail.brands.malabar.gold18k}
-                  currency="INR"
-                  badge="Purity Promise"
-                  premium={data.retail.brands.malabar.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.malabar.gold22k, 'volatile')}
-                />
-
-                <GoldCard 
-                  title="AVR Swarna Mahal"
-                  description={data.retail.brands.avr.description}
-                  gold22k={data.retail.brands.avr.gold22k}
-                  gold24k={data.retail.brands.avr.gold24k}
-                  gold18k={data.retail.brands.avr.gold18k}
-                  currency="INR"
-                  badge="High Detail"
-                  premium={data.retail.brands.avr.premium}
-                  sparklineData={getMockSparkline(data.retail.brands.avr.gold22k, 'up')}
-                />
+                {Object.keys(data.retail.brands).map((key) => {
+                  const brand = data.retail.brands[key];
+                  return (
+                    <GoldCard 
+                      key={key}
+                      title={brand.name}
+                      description={brand.description}
+                      gold22k={brand.gold22k}
+                      gold24k={brand.gold24k}
+                      gold18k={brand.gold18k}
+                      currency="INR"
+                      badge={key === 'tanishq' ? 'Tata Trust' : key === 'lalitha' ? 'Lowest VA' : 'Live Board'}
+                      premium={brand.premium}
+                      sparklineData={getMockSparkline(brand.gold22k, key === 'lalitha' ? 'down' : 'up')}
+                    />
+                  );
+                })}
 
                 {/* Dubai Gold Rate Card */}
                 <GoldCard 
@@ -386,6 +342,28 @@ export default function App() {
             )}
 
           </div>
+        </div>
+
+        {/* Price History & AI predictions Grid */}
+        {data && (
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+            gap: '24px', 
+            marginBottom: '32px'
+          }}>
+            <div style={{ minWidth: '320px' }}>
+              <HistoricalChart />
+            </div>
+            <div>
+              <MarketInsights insights={data.insights} />
+            </div>
+          </div>
+        )}
+
+        {/* Investment Asset Class Comparison (Physical Ornaments vs Gold BeES) */}
+        <div style={{ marginBottom: '32px' }}>
+          <InvestmentComparison />
         </div>
 
         {/* 11-Month Gold Chit Comparison Section */}
