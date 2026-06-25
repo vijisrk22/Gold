@@ -16,6 +16,8 @@ export interface ExchangeRates {
 export interface MarketData {
   spotGold: MarketIndex;
   spotSilver: MarketIndex;
+  goldBees?: MarketIndex;
+  silverBees?: MarketIndex;
   exchangeRates: ExchangeRates;
 }
 
@@ -190,6 +192,8 @@ export const getFallbackRates = (overrides?: ManualOverrides): GoldRatesPayload 
     market: {
       spotGold: { price: spotGold, change: -12.4, changePercent: -0.31, currency: 'USD', symbol: 'GC=F' },
       spotSilver: { price: spotSilver, change: 0.15, changePercent: 0.48, currency: 'USD', symbol: 'SI=F' },
+      goldBees: { price: 114.96, change: -2.60, changePercent: -2.21, currency: 'INR', symbol: 'GOLDBEES.NS' },
+      silverBees: { price: 206.57, change: -6.78, changePercent: -3.18, currency: 'INR', symbol: 'SILVERBEES.NS' },
       exchangeRates: {
         usdInr,
         usdAed,

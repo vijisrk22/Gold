@@ -425,6 +425,72 @@ export default function App() {
               </div>
             )}
 
+            {/* ETF Rates Section */}
+            {data && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>INDIAN EXCHANGE ETFS (NSE)</span>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  
+                  {/* Gold BeES */}
+                  <div style={{ 
+                    padding: '12px', 
+                    background: 'rgba(255,255,255,0.02)', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>GOLD BEES</span>
+                      <span style={{ 
+                        fontSize: '0.65rem', 
+                        fontWeight: 700, 
+                        color: (data.market.goldBees?.changePercent ?? 0) >= 0 ? 'var(--color-up)' : 'var(--color-down)',
+                        background: (data.market.goldBees?.changePercent ?? 0) >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        padding: '1px 4px',
+                        borderRadius: '3px'
+                      }}>
+                        {(data.market.goldBees?.changePercent ?? 0) >= 0 ? '+' : ''}{(data.market.goldBees?.changePercent ?? 0).toFixed(2)}%
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
+                      ₹{(data.market.goldBees?.price ?? 114.96).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* Silver BeES */}
+                  <div style={{ 
+                    padding: '12px', 
+                    background: 'rgba(255,255,255,0.02)', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>SILVER BEES</span>
+                      <span style={{ 
+                        fontSize: '0.65rem', 
+                        fontWeight: 700, 
+                        color: (data.market.silverBees?.changePercent ?? 0) >= 0 ? 'var(--color-up)' : 'var(--color-down)',
+                        background: (data.market.silverBees?.changePercent ?? 0) >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        padding: '1px 4px',
+                        borderRadius: '3px'
+                      }}>
+                        {(data.market.silverBees?.changePercent ?? 0) >= 0 ? '+' : ''}{(data.market.silverBees?.changePercent ?? 0).toFixed(2)}%
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
+                      ₹{(data.market.silverBees?.price ?? 206.57).toFixed(2)}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
             {/* General Info / Market Sentiment */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, justifyContent: 'center' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>EXCHANGE SENTIMENT REPORT</span>

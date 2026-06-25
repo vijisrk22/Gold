@@ -95,8 +95,8 @@ async function scrapeChennaiSilverRate() {
 
   try {
     // Silver table contains:
-    // <tr> <td>1 gram</td> <td> &#x20b9;105 ... </td>
-    const silverRegex = /<tr>\s*<td>1\s*Gram<\/td>\s*<td>\s*&#x20b9;([\d,.]+)/i;
+    // <tr> <td>1</td> <td> &#x20b9;230 ... </td>
+    const silverRegex = /<tr>\s*<td>1<\/td>\s*<td>\s*&#x20b9;([\d,.]+)/i;
     const match = silverRegex.exec(html);
     if (match) {
       return parseFloat(match[1].replace(/,/g, ''));
@@ -214,11 +214,13 @@ app.get('/api/rates', async (req, res) => {
   console.log('Fetching live gold rates...');
   
   // 1. Fetch live stock market indexes in parallel
-  const [spotGold, spotSilver, usdInr, usdAed] = await Promise.all([
+  const [spotGold, spotSilver, usdInr, usdAed, goldBees, silverBees] = await Promise.all([
     fetchYahooFinanceIndex('GC=F'),
     fetchYahooFinanceIndex('SI=F'),
     fetchYahooFinanceIndex('INR=X'),
-    fetchYahooFinanceIndex('AED=X')
+    fetchYahooFinanceIndex('AED=X'),
+    fetchYahooFinanceIndex('GOLDBEES.NS'),
+    fetchYahooFinanceIndex('SILVERBEES.NS')
   ]);
 
   // 2. Attempt scraping
@@ -345,6 +347,8 @@ app.get('/api/rates', async (req, res) => {
     market: {
       spotGold: spotGold || { price: spotPrice, change: 0, changePercent: 0, currency: 'USD' },
       spotSilver: spotSilver || { price: spotSilver ? spotSilver.price : 30.0, change: 0, changePercent: 0, currency: 'USD' },
+      goldBees: goldBees || { price: 115.03, change: 0, changePercent: 0, currency: 'INR', symbol: 'GOLDBEES.NS' },
+      silverBees: silverBees || { price: 206.57, change: 0, changePercent: 0, currency: 'INR', symbol: 'SILVERBEES.NS' },
       exchangeRates: {
         usdInr: inrRate,
         usdAed: aedRate,
