@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, 
-  Coins, 
   RotateCw, 
   AlertCircle, 
   BookOpen, 
@@ -190,9 +189,6 @@ export default function App() {
         <div className="header-container">
           
           <div className="header-logo-section">
-            <div style={{ background: 'var(--gold-glow)', padding: '8px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-              <Coins className="gold-text" size={24} />
-            </div>
             <div>
               <h1 style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1 }} className="gold-text notranslate">
                 Maatal.com
