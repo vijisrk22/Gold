@@ -346,6 +346,19 @@ app.get('/api/rates', async (req, res) => {
   });
 });
 
+const path = require('path');
+
+// Serve static assets from the React frontend build
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Handle client-side routing fallback - serve index.html for non-API routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`Gold Rate Server running on port ${PORT}`);
 });
