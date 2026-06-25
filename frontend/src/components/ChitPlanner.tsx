@@ -486,7 +486,7 @@ export const ChitPlanner: React.FC<ChitPlannerProps> = ({ retail }) => {
       };
     }).sort((a, b) => b.score - a.score);
 
-    return rankedMatches[0];
+    return rankedMatches[0] || { key: '', score: 0, brandName: '', badge: '', type: 'weight', avgWastage: 0, maxWaiver: 0 };
   };
 
   const wizardMatch = getWizardMatch();

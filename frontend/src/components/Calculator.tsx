@@ -13,9 +13,16 @@ export const Calculator: React.FC<CalculatorProps> = ({ retail }) => {
   const [caratType, setCaratType] = useState<'22k' | '24k' | '18k'>('22k');
 
   const brandKeys = Object.keys(retail.brands);
+
+  // Automatically reset selectedBrand if the current selection is not available for this city
+  React.useEffect(() => {
+    if (brandKeys.length > 0 && !brandKeys.includes(selectedBrand)) {
+      setSelectedBrand(brandKeys[0]);
+    }
+  }, [retail.brands, selectedBrand, brandKeys]);
   
   // Calculate specific billing for selected brand
-  const currentBrand = retail.brands[selectedBrand] || retail.brands.lalitha;
+  const currentBrand = retail.brands[selectedBrand] || retail.brands[brandKeys[0]] || { name: 'Retail Brand', gold24k: 0, gold22k: 0, gold18k: 0, premium: 0 };
   const ratePerGram = caratType === '22k' 
     ? currentBrand.gold22k 
     : caratType === '24k' 
