@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 
 console.log('\x1b[33m%s\x1b[0m', '==================================================');
-console.log('\x1b[33m%s\x1b[0m', '      AURUM LIVE - DEV STACK STARTUPING...        ');
+console.log('\x1b[33m%s\x1b[0m', '      Maatal.com - DEV STACK STARTUPING...        ');
 console.log('\x1b[33m%s\x1b[0m', '==================================================');
 
 // Start Express Scraper Backend

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, 
   Coins, 
@@ -10,7 +10,8 @@ import {
   ArrowUpRight,
   Info,
   MapPin,
-  TrendingUp
+  Bell,
+  Activity
 } from 'lucide-react';
 import { fetchGoldRates, getSavedOverrides } from './utils/api';
 import type { GoldRatesPayload } from './utils/api';
@@ -21,18 +22,48 @@ import { RateEditor } from './components/RateEditor';
 import { ChitPlanner } from './components/ChitPlanner';
 import { HistoricalChart } from './components/HistoricalChart';
 import { MarketInsights } from './components/MarketInsights';
-import { InvestmentComparison } from './components/InvestmentComparison';
 import { SearchIndexHub } from './components/SearchIndexHub';
+import { PriceAlertManager } from './components/PriceAlertManager';
 
 const DAILY_TIPS = [
   "Look for the BIS Hallmark: Ensure your jewelry has the BIS logo, purity grade (e.g. 22K916), and the unique 6-digit HUID code before paying.",
   "Bargain on Making Charges: Wastage charges (Value Addition) are highly negotiable. You can often get discounts of 10% to 20% on these charges.",
   "Avoid Weekend Buying: Retail gold rates are locked on Friday evening and do not change on Saturday/Sunday. If spot prices drop on the weekend, wait for Monday morning.",
   "Understand GST: GST on gold is exactly 3% of the final jewelry price (Gold value + Making charges). Always ask for a printed tax invoice.",
-  "Gold BeES for investment: If you want to invest in gold without storage fees or making charges, buy Nippon India Gold BeES ETF on the stock exchange.",
   "The Scrap Value Rule: When selling or exchange old gold, jewellers deduct melt wastage. Keep bills of original purchases to claim maximum value.",
   "Compare KDM vs Hallmarked: KDM gold is soldered with cadmium, which is unhealthy. Insist on modern Hallmarked gold soldered with zinc/copper."
 ];
+
+const STATES: Record<string, { id: string; name: string }[]> = {
+  "Tamil Nadu": [{ id: "chennai", name: "Chennai" }],
+  "Maharashtra": [{ id: "mumbai", name: "Mumbai" }],
+  "Delhi": [{ id: "delhi", name: "Delhi" }],
+  "Karnataka": [{ id: "bangalore", name: "Bangalore" }],
+  "West Bengal": [{ id: "kolkata", name: "Kolkata" }],
+  "Telangana": [{ id: "hyderabad", name: "Hyderabad" }],
+  "Kerala": [{ id: "kerala", name: "Kerala" }]
+};
+
+const GoogleTranslateWidget = React.memo(() => {
+  useEffect(() => {
+    (window as any).googleTranslateElementInit = () => {
+      new (window as any).google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'ta,te,hi,ml,kn,en', 
+        layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    };
+
+    if (!document.getElementById('google-translate-script')) {
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  return <div id="google_translate_element" style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '2px 8px', minWidth: '130px', minHeight: '30px', overflow: 'hidden' }}></div>;
+}, () => true);
 
 export default function App() {
   const [data, setData] = useState<GoldRatesPayload | null>(null);
@@ -42,7 +73,16 @@ export default function App() {
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
   const [tipIndex, setTipIndex] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [showPriceAlerts, setShowPriceAlerts] = useState<boolean>(false);
+  const [selectedState, setSelectedState] = useState<string>('Tamil Nadu');
   const [location, setLocation] = useState<string>('chennai');
+
+  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newState = e.target.value;
+    setSelectedState(newState);
+    const firstCity = STATES[newState][0].id;
+    setLocation(firstCity);
+  };
 
   // Set the current tip index based on day of the month
   useEffect(() => {
@@ -123,8 +163,8 @@ export default function App() {
               <Coins className="gold-text" size={24} />
             </div>
             <div>
-              <h1 style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1 }} className="gold-text">
-                AURUM LIVE
+              <h1 style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1 }} className="gold-text notranslate">
+                Maatal.com
               </h1>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                 Aggregated Jewellers & Bullion Exchange
@@ -133,9 +173,32 @@ export default function App() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <GoogleTranslateWidget />
             {/* Location Selector Dropdown */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px 12px' }}>
               <MapPin size={14} style={{ color: 'var(--gold-primary)' }} />
+              
+              <select 
+                value={selectedState}
+                onChange={handleStateChange}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  outline: 'none',
+                  cursor: 'pointer',
+                  borderRight: '1px solid rgba(255,255,255,0.1)',
+                  marginRight: '6px',
+                  paddingRight: '6px'
+                }}
+              >
+                {Object.keys(STATES).map(st => (
+                  <option key={st} value={st} style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>{st}</option>
+                ))}
+              </select>
+
               <select 
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
@@ -149,22 +212,24 @@ export default function App() {
                   cursor: 'pointer'
                 }}
               >
-                <option value="chennai" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Chennai</option>
-                <option value="mumbai" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Mumbai</option>
-                <option value="delhi" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Delhi</option>
-                <option value="bangalore" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Bangalore</option>
-                <option value="kolkata" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Kolkata</option>
-                <option value="hyderabad" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Hyderabad</option>
-                <option value="kerala" style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>Kerala</option>
+                {STATES[selectedState].map(city => (
+                  <option key={city.id} value={city.id} style={{ background: 'var(--bg-main)', color: 'var(--text-primary)' }}>{city.name}</option>
+                ))}
               </select>
             </div>
 
             {showManualBadge ? (
-              <span className="offline-badge" style={{ fontSize: '0.75rem', padding: '6px 12px' }}>Custom Override active</span>
+              <span className="offline-badge" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Custom Override active">
+                <AlertCircle size={16} />
+              </span>
             ) : data?.retail.associationRate.isScraped ? (
-              <span className="live-badge" style={{ fontSize: '0.75rem', padding: '6px 12px' }}>Live Scrapers Connected</span>
+              <span className="live-badge" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Live Scrapers Connected">
+                <Activity size={16} />
+              </span>
             ) : (
-              <span className="offline-badge" style={{ fontSize: '0.75rem', padding: '6px 12px' }}>Mathematical Spot Feed</span>
+              <span className="offline-badge" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Mathematical Spot Feed">
+                <AlertCircle size={16} />
+              </span>
             )}
 
             <button 
@@ -177,6 +242,27 @@ export default function App() {
             </button>
 
             <RateEditor onSave={() => loadRates(location)} />
+
+            <button 
+              onClick={() => setShowPriceAlerts(!showPriceAlerts)}
+              className="glass-panel"
+              style={{ 
+                padding: '10px 16px', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                fontSize: '0.85rem',
+                color: '#000',
+                background: 'var(--gold-primary)',
+                fontWeight: 700,
+                border: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              <Bell size={14} />
+              Get Price Alert
+            </button>
 
             <button 
               onClick={() => loadRates(location)}
@@ -211,6 +297,8 @@ export default function App() {
             <span><strong>Warning:</strong> {error}. Reconnecting background sync engine.</span>
           </div>
         )}
+
+        {showPriceAlerts && <PriceAlertManager onClose={() => setShowPriceAlerts(false)} />}
 
         {/* Top Summary Block */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '24px' }}>
@@ -283,63 +371,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Main Trend Chart Card */}
-          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '160px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TrendingUp className="gold-text" size={18} />
-              <span style={{ fontSize: '0.75rem', color: 'var(--gold-primary)', fontWeight: 700, letterSpacing: '0.05em' }}>1-YEAR MARKET TREND (INR)</span>
-            </div>
-            
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 0', width: '100%' }}>
-              {(() => {
-                const base = data?.retail.associationRate.gold22k || 13140;
-                // Realistic 12-month historical gold trend (approx 25-30% growth over last year)
-                const dataPoints = [
-                  base * 0.76, base * 0.75, base * 0.78, base * 0.80, 
-                  base * 0.79, base * 0.84, base * 0.83, base * 0.88, 
-                  base * 0.92, base * 0.89, base * 0.96, base
-                ];
-                
-                const svgWidth = 240;
-                const svgHeight = 70;
-                const padLeft = 40;
-                const padBottom = 15;
-                const chartWidth = svgWidth - padLeft;
-                const chartHeight = svgHeight - padBottom;
-                
-                const max = Math.max(...dataPoints);
-                const min = Math.min(...dataPoints);
-                const range = max - min === 0 ? 1 : max - min;
-                
-                const path = dataPoints.map((val, index) => {
-                  const x = padLeft + (index / (dataPoints.length - 1)) * chartWidth;
-                  const y = chartHeight - ((val - min) / range) * chartHeight + 2;
-                  return `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
-                }).join(' ');
-                
-                return (
-                  <svg width="100%" height="100%" viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ overflow: 'visible', maxWidth: '280px', maxHeight: '100px' }}>
-                    {/* Grid and Y-Axis Labels */}
-                    <line x1={padLeft} y1="2" x2={svgWidth} y2="2" stroke="var(--border-color)" strokeDasharray="2,2" />
-                    <text x={padLeft - 5} y="6" fontSize="9" fill="var(--text-secondary)" textAnchor="end">₹{(max/1000).toFixed(1)}k</text>
-
-                    <line x1={padLeft} y1={chartHeight/2 + 2} x2={svgWidth} y2={chartHeight/2 + 2} stroke="var(--border-color)" strokeDasharray="2,2" opacity="0.5" />
-                    <text x={padLeft - 5} y={chartHeight/2 + 5} fontSize="9" fill="var(--text-secondary)" textAnchor="end">₹{(((max+min)/2)/1000).toFixed(1)}k</text>
-
-                    <line x1={padLeft} y1={chartHeight + 2} x2={svgWidth} y2={chartHeight + 2} stroke="var(--border-color)" strokeDasharray="2,2" />
-                    <text x={padLeft - 5} y={chartHeight + 5} fontSize="9" fill="var(--text-secondary)" textAnchor="end">₹{(min/1000).toFixed(1)}k</text>
-
-                    {/* Chart Line */}
-                    <path d={path} fill="none" stroke="var(--color-up)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    
-                    {/* X-Axis Labels (Months) */}
-                    <text x={padLeft} y={svgHeight + 2} fontSize="8" fill="var(--text-muted)">1Yr Ago</text>
-                    <text x={svgWidth} y={svgHeight + 2} fontSize="8" fill="var(--text-muted)" textAnchor="end">Today</text>
-                  </svg>
-                );
-              })()}
-            </div>
-          </div>
 
         </div>
 
@@ -365,7 +396,7 @@ export default function App() {
                       gold24k={brand.gold24k}
                       gold18k={brand.gold18k}
                       currency="INR"
-                      badge={key === 'tanishq' ? 'Tata Trust' : ['lalitha', 'mangal', 'kalyan'].includes(key) ? 'Live Scrape' : 'Live Board'}
+
                       premium={brand.premium}
                       sparklineData={getMockSparkline(brand.gold22k, key === 'lalitha' ? 'down' : 'up')}
                     />
@@ -418,10 +449,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Investment Asset Class Comparison (Physical Ornaments vs Gold BeES) */}
-        <div style={{ marginBottom: '32px' }}>
-          <InvestmentComparison />
-        </div>
+
 
         {/* 11-Month Gold Chit Comparison Section */}
         {data && <ChitPlanner retail={data.retail} />}
@@ -460,71 +488,6 @@ export default function App() {
               </div>
             )}
 
-            {/* ETF Rates Section */}
-            {data && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>INDIAN EXCHANGE ETFS (NSE)</span>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  
-                  {/* Gold BeES */}
-                  <div style={{ 
-                    padding: '12px', 
-                    background: 'rgba(255,255,255,0.02)', 
-                    border: '1px solid var(--border-color)', 
-                    borderRadius: '10px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>GOLD BEES</span>
-                      <span style={{ 
-                        fontSize: '0.65rem', 
-                        fontWeight: 700, 
-                        color: (data.market.goldBees?.changePercent ?? 0) >= 0 ? 'var(--color-up)' : 'var(--color-down)',
-                        background: (data.market.goldBees?.changePercent ?? 0) >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                        padding: '1px 4px',
-                        borderRadius: '3px'
-                      }}>
-                        {(data.market.goldBees?.changePercent ?? 0) >= 0 ? '+' : ''}{(data.market.goldBees?.changePercent ?? 0).toFixed(2)}%
-                      </span>
-                    </div>
-                    <span style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
-                      ₹{(data.market.goldBees?.price ?? 114.96).toFixed(2)}
-                    </span>
-                  </div>
-
-                  {/* Silver BeES */}
-                  <div style={{ 
-                    padding: '12px', 
-                    background: 'rgba(255,255,255,0.02)', 
-                    border: '1px solid var(--border-color)', 
-                    borderRadius: '10px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>SILVER BEES</span>
-                      <span style={{ 
-                        fontSize: '0.65rem', 
-                        fontWeight: 700, 
-                        color: (data.market.silverBees?.changePercent ?? 0) >= 0 ? 'var(--color-up)' : 'var(--color-down)',
-                        background: (data.market.silverBees?.changePercent ?? 0) >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                        padding: '1px 4px',
-                        borderRadius: '3px'
-                      }}>
-                        {(data.market.silverBees?.changePercent ?? 0) >= 0 ? '+' : ''}{(data.market.silverBees?.changePercent ?? 0).toFixed(2)}%
-                      </span>
-                    </div>
-                    <span style={{ fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
-                      ₹{(data.market.silverBees?.price ?? 206.57).toFixed(2)}
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-            )}
 
             {/* General Info / Market Sentiment */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, justifyContent: 'center' }}>
@@ -557,7 +520,7 @@ export default function App() {
 
       {/* Footer Area */}
       <footer style={{ borderTop: '1px solid var(--border-color)', padding: '24px', textAlign: 'center', background: 'rgba(7, 10, 19, 0.6)', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-        <p>© 2026 Aurum Live. Daily gold and silver rate comparison tracker.</p>
+        <p>© 2026 Maatal.com. Daily gold and silver rate comparison tracker.</p>
         <p style={{ marginTop: '4px', color: 'var(--text-muted)' }}>
           Data sourced from Madras Jewellers Association scrapers, Dubai Gold Group, and COMEX futures indices.
         </p>

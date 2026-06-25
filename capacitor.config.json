@@ -1,6 +1,6 @@
 {
-  "appId": "com.aurumlive.app",
-  "appName": "Aurum Live",
+  "appId": "com.maatal.app",
+  "appName": "Maatal.com",
   "webDir": "frontend/dist",
   "bundledWebRuntime": false
 }

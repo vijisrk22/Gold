@@ -215,22 +215,7 @@ export const getFallbackRates = (location?: string, overrides?: ManualOverrides)
       premium: 20,
       description: 'World-renowned collections and global standard retail rate'
     },
-    lalitha: {
-      name: 'Lalithaa Jewellery',
-      gold24k: base24k + 5,
-      gold22k: base22k + 5,
-      gold18k: base18k + 5,
-      premium: 5,
-      description: 'Known for transparent pricing and low making charges'
-    },
-    malabar: {
-      name: 'Malabar Gold & Diamonds',
-      gold24k: base24k + 20,
-      gold22k: base22k + 20,
-      gold18k: base18k + 15,
-      premium: 20,
-      description: 'World-renowned collections and global standard retail rate'
-    },
+
     avr: {
       name: 'AVR Swarna Mahal',
       gold24k: base24k + 5,
@@ -347,7 +332,7 @@ export const getFallbackRates = (location?: string, overrides?: ManualOverrides)
   const news = [
     {
       title: "Gold Pulls Back as Investors Lock in Profits",
-      source: "Aurum Live Research",
+      source: "Maatal.com Research",
       time: "2 hours ago",
       snippet: `Spot gold (XAU/USD) traded around $${spotGold.toFixed(2)} per ounce, registering a ${goldChange.toFixed(2)}% daily change as traders analyze global economic indicators.`
     },

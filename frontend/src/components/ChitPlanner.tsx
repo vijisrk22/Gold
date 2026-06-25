@@ -39,7 +39,7 @@ const BRAND_SCHEMES: { [key: string]: SchemeDetails } = {
     bonusFraction: 1.0, 
     maxWaiverPct: 0.0,  
     avgWastagePct: 0.14, 
-    trustBadge: 'Tata Trust & Purity',
+    trustBadge: 'Highest Purity Guarantee',
     pros: ['100% bonus installment', 'Certified HUID 22K/18K purity', 'Excellent modern designs'],
     cons: ['No gold rate lock-in (cash scheme)', 'No making charge waiver (pay 12-16% wastage)']
   },
@@ -98,10 +98,30 @@ const BRAND_SCHEMES: { [key: string]: SchemeDetails } = {
     type: 'weight',
     bonusFraction: 0.0,
     maxWaiverPct: 0.18,
-    avgWastagePct: 0.11,
-    trustBadge: 'High Detail regional',
-    pros: ['Gold rate locked in every month', 'Wastage waived up to 18%', 'Superb local Tamil Nadu designs'],
-    cons: ['No cash bonus', 'Limited showrooms outside Tamil Nadu']
+    avgWastagePct: 0.14,
+    trustBadge: 'High Detail Design',
+    pros: ['Gold rate locked in every month', 'Waives making charges up to 18%', 'Great fine-detail regional designs'],
+    cons: ['No cash bonus']
+  },
+  thangamayil: {
+    name: 'Thangamayil Super Gold',
+    type: 'weight',
+    bonusFraction: 0.0,
+    maxWaiverPct: 0.18,
+    avgWastagePct: 0.12,
+    trustBadge: 'Regional Chain',
+    pros: ['Gold rate locked in every month', 'Waives making charges up to 18%', 'Vast presence across TN'],
+    cons: ['No cash bonus']
+  },
+  mangal: {
+    name: 'Mangal & Mangal Gold Plan',
+    type: 'weight',
+    bonusFraction: 0.0,
+    maxWaiverPct: 0.15,
+    avgWastagePct: 0.10,
+    trustBadge: 'Trichy Local Trust',
+    pros: ['Gold rate locked in every month', 'Waives making charges up to 15%', 'Highly reputed single-store branch'],
+    cons: ['No cash bonus', 'Only located in Trichy']
   },
   atr: {
     name: 'ATR Flexi Savings',
@@ -446,6 +466,7 @@ export const ChitPlanner: React.FC<ChitPlannerProps> = ({ retail }) => {
     const rankedMatches = brandKeys.map(key => {
       const brand = retail.brands[key];
       const scheme = BRAND_SCHEMES[key];
+      if (!scheme) return null;
       let score = 50;
 
       // 1. Match on scheme type
@@ -480,11 +501,11 @@ export const ChitPlanner: React.FC<ChitPlannerProps> = ({ retail }) => {
         score,
         brandName: scheme.name,
         badge: scheme.trustBadge,
-        type: scheme.type,
+        type: scheme.type as 'weight' | 'cash',
         avgWastage: scheme.avgWastagePct * 100,
         maxWaiver: scheme.maxWaiverPct * 100
       };
-    }).sort((a, b) => b.score - a.score);
+    }).filter((match): match is { key: string, score: number, type: "weight" | "cash", maxWaiver: number, avgWastage: number, badge: string, brandName: string } => match !== null).sort((a, b) => b.score - a.score);
 
     return rankedMatches[0] || { key: '', score: 0, brandName: '', badge: '', type: 'weight', avgWastage: 0, maxWaiver: 0 };
   };
@@ -651,7 +672,7 @@ export const ChitPlanner: React.FC<ChitPlannerProps> = ({ retail }) => {
         <body>
           <div class="header">
             <div>
-              <div class="title">AURUM LIVE INVESTMENT QUOTE</div>
+              <div class="title"><span class="notranslate">Maatal.com</span> INVESTMENT QUOTE</div>
               <div class="subtitle">Official Scheme Comparison Calculator</div>
             </div>
             <div class="meta-info">
@@ -751,11 +772,11 @@ export const ChitPlanner: React.FC<ChitPlannerProps> = ({ retail }) => {
 
           <div class="sig-area">
             <div class="sig-box">Investor Signature</div>
-            <div class="sig-box">Aurum Live Advisor Seal</div>
+            <div class="sig-box">Maatal.com Advisor Seal</div>
           </div>
 
           <div class="footer">
-            Generated via Aurum Live Gold Comparison Dashboard. Clean paper copies are tax-advisory summaries only.
+            Generated via Maatal.com Gold Comparison Dashboard. Clean paper copies are tax-advisory summaries only.
           </div>
         </body>
       </html>

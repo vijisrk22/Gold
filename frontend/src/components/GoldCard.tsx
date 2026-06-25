@@ -79,7 +79,7 @@ export const GoldCard: React.FC<GoldCardProps> = ({
         {/* 18K Price if available */}
         {gold18k && (
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '6px' }}>
-            <span>18K Budget Rate:</span>
+            <span>18K Rate:</span>
             <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{formatCurrency(gold18k, currency)} / g</span>
           </div>
         )}

@@ -16,22 +16,18 @@ const FAQS: FAQItem[] = [
   {
     category: 'Silver Rates',
     question: 'What influences the retail silver rate per gram and per kg in India?',
-    answer: 'The daily silver rate is heavily driven by industrial demand (since silver is a critical industrial commodity in electronics and solar panels) and global precious metal indices. In India, retail silver rate today is quoted per gram or per kilogram (kg) and includes a 15% customs import duty and 3% GST. Historical silver prices show higher volatility than gold, making Silver BeES ETF or physical silver bars popular hedges against inflation.'
+    answer: 'The daily silver rate is heavily driven by industrial demand (since silver is a critical industrial commodity in electronics and solar panels) and global precious metal indices. In India, retail silver rate today is quoted per gram or per kilogram (kg) and includes a 15% customs import duty and 3% GST. Historical silver prices show higher volatility than gold, making physical silver bars popular hedges against inflation.'
   },
   {
     category: 'Dubai Customs Calculator',
     question: 'What are the Indian customs duty and allowance rules for bringing gold from Dubai?',
     answer: 'Under Indian passenger baggage rules, passengers returning after staying abroad for more than 1 year are allowed tax-free gold limits: Female passengers can carry up to 40 grams of gold (with a value limit of ₹1,00,000), and Male passengers can carry up to 20 grams of gold (with a value limit of ₹50,000). Any gold imported above these allowances is subject to a flat 15% custom duty tax. Calculating the net savings involves comparing the Dubai retail gold rate (including custom duty paid, if any) with the local retail gold rate in India.'
-  },
-  {
-    category: 'Gold BeES ETF vs Physical Gold',
-    question: 'Is it better to invest in Gold BeES ETF or physical gold ornaments?',
-    answer: 'For investment, Nippon India Gold BeES ETF is highly superior to physical gold jewelry. Physical gold ornaments suffer from initial value leakages, including 3% GST and 10%-18% making/wastage charges, which instantly consumes about 13%-21% of your investment capital on day one. Gold BeES ETF tracks the direct gold spot rate with zero making charges, minimal tracking error, high liquidity on the NSE/BSE, and low annual management fees (approx 0.10%). Over a 5 or 10-year SIP period, compounding on 99.9% of your capital (via ETF) yields significantly higher returns than physical gold.'
+
   },
   {
     category: 'Gold Chit Schemes',
     question: 'Are 11-month gold jewelry chit schemes from GRT or Tanishq beneficial?',
-    answer: '11-month jewelry savings schemes (Chit plans) help buyers accumulate gold by paying fixed monthly installments. At the end of the term, jewelers like GRT, Tanishq, Lalitha, or Kalyan waive the making charges and wastage fees (typically up to 14%-18% VA) for purchasing new ornaments. While this is beneficial for purchasing physical wedding jewelry, it restricts your investment to a single showroom and requires buying physical gold. For pure financial appreciation, Gold BeES or Sovereign Gold Bonds (SGB) are more cost-effective.'
+    answer: '11-month jewelry savings schemes (Chit plans) help buyers accumulate gold by paying fixed monthly installments. At the end of the term, jewelers like GRT, Tanishq, Lalitha, or Kalyan waive the making charges and wastage fees (typically up to 14%-18% VA) for purchasing new ornaments. While this is beneficial for purchasing physical wedding jewelry, it restricts your investment to a single showroom and requires buying physical gold. For pure financial appreciation, Sovereign Gold Bonds (SGB) are more cost-effective.'
   },
   {
     category: 'Market Drivers & Forecasting',
@@ -42,8 +38,8 @@ const FAQS: FAQItem[] = [
 
 const KEYWORD_CLOUD = [
   'gold rate today', 'silver rate today', 'live gold price chennai', 'grt gold price', 'tanishq gold rate', 
-  'lalitha jewellery rate', 'dubai gold rate in inr', 'gold customs duty calculator', 'gold bees etf', 
-  'silver bees nse', 'kalyan jewellers rate', 'malabar gold price', 'gold price prediction', 
+  'lalitha jewellery rate', 'dubai gold rate in inr', 'gold customs duty calculator',
+  'kalyan jewellers rate', 'malabar gold price', 'gold price prediction', 
   'making charges wastage', 'bis 916 hallmarked gold', 'huid 6 digit code', 'commodity spot gold', 
   'comex xau usd', 'madras jewellers association', '11 month gold chit scheme', 'gold rate india', 
   'gold sip compounding', 'mcx silver price', 'gold rate forecast 2026', 'tax free gold limit india'
@@ -63,7 +59,7 @@ export const SearchIndexHub: React.FC = () => {
         <BookOpen className="gold-text" size={24} />
         <div>
           <h2 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Aurum Reference Hub <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gold-primary)', background: 'rgba(234,179,8,0.1)', padding: '2px 8px', borderRadius: '12px' }}>AI Engine & SEO Optimized</span>
+            Maatal.com Reference Hub <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gold-primary)', background: 'rgba(234,179,8,0.1)', padding: '2px 8px', borderRadius: '12px' }}>AI Engine & SEO Optimized</span>
           </h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Factual analysis, structured FAQs, and search indices for generative search models and retail investors</p>
         </div>

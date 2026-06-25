@@ -36,18 +36,13 @@ export const StockMarketTicker: React.FC<StockMarketTickerProps> = ({ market }) 
     );
   };
 
-  const goldBeesPrice = market.goldBees ? market.goldBees.price : 114.96;
-  const goldBeesChange = market.goldBees ? market.goldBees.changePercent : -2.21;
-  const silverBeesPrice = market.silverBees ? market.silverBees.price : 206.57;
-  const silverBeesChange = market.silverBees ? market.silverBees.changePercent : -3.18;
+
 
   const tickerItems = [
     renderTickerItem('Spot Gold (XAU/USD)', spotGold.price.toLocaleString(undefined, { minimumFractionDigits: 2 }), spotGold.changePercent, '$'),
     renderTickerItem('Spot Silver (XAG/USD)', spotSilver.price.toLocaleString(undefined, { minimumFractionDigits: 2 }), spotSilver.changePercent, '$'),
     renderTickerItem('USD / INR Exchange', exchangeRates.usdInr.toFixed(3), exchangeRates.usdInrChangePercent, '₹'),
     renderTickerItem('USD / AED Exchange', exchangeRates.usdAed.toFixed(4), exchangeRates.usdAedChangePercent),
-    renderTickerItem('NSE Gold BeES ETF', goldBeesPrice.toFixed(2), goldBeesChange, '₹'),
-    renderTickerItem('NSE Silver BeES ETF', silverBeesPrice.toFixed(2), silverBeesChange, '₹')
   ];
 
   // Repeat items to fill marquee and make it scroll infinitely

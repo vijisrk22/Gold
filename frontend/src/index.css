@@ -298,3 +298,25 @@ h1, h2, h3, h4, h5, h6 {
 .table-row-hover:hover {
   background-color: var(--bg-surface-hover) !important;
 }
+
+/* Google Translate Overrides */
+.goog-te-gadget-icon {
+  display: none !important;
+}
+.goog-te-gadget-simple {
+  border: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+.goog-te-gadget-simple span {
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+}
+.goog-te-menu-value span:nth-child(5) {
+  display: none !important; /* Hides the "powered by" or other extra spans */
+}
+.goog-te-menu-value span:nth-child(3) {
+  border: none !important;
+}

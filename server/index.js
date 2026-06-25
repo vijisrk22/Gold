@@ -468,7 +468,7 @@ function generateMarketInsights(spotGold, spotSilver, usdInr) {
   const news = [
     {
       title: goldChange >= 0 ? "Global Gold Rallies on Lower Rate Hopes" : "Gold Pulls Back as Investors Lock in Profits",
-      source: "Aurum Live Research",
+      source: "Maatal.com Research",
       time: "2 hours ago",
       snippet: `Spot gold (XAU/USD) traded around $${spotGold ? spotGold.price.toFixed(2) : '4000'} per ounce, registering a ${goldChange.toFixed(2)}% daily change as traders analyze global economic indicators.`
     },
