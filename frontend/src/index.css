@@ -290,3 +290,11 @@ h1, h2, h3, h4, h5, h6 {
 .ticker-change.down {
   color: var(--color-down);
 }
+
+.table-row-hover {
+  transition: background-color 0.2s ease;
+}
+
+.table-row-hover:hover {
+  background-color: var(--bg-surface-hover) !important;
+}
