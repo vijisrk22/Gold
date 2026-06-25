@@ -49,7 +49,7 @@ export const StockMarketTicker: React.FC<StockMarketTickerProps> = ({ market }) 
   const repeatedItems = [...tickerItems, ...tickerItems, ...tickerItems];
 
   return (
-    <div className="ticker-container">
+    <div className="ticker-container dark-header">
       <div className="ticker-wrap">
         <div className="ticker-track">
           {repeatedItems.map((item, index) => (

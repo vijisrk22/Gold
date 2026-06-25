@@ -1075,13 +1075,13 @@ export const ChitPlanner: React.FC<ChitPlannerProps> = ({ retail }) => {
 
           {/* Wizard Results Banner */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'space-between' }}>
-            <div style={{ padding: '24px', background: 'linear-gradient(135deg, rgba(7, 10, 19, 0.9) 0%, rgba(234, 179, 8, 0.05) 100%)', border: '1px solid var(--gold-primary)', borderRadius: '12px', boxShadow: 'var(--shadow-glow)' }}>
+            <div style={{ padding: '24px', background: 'linear-gradient(135deg, var(--bg-surface) 0%, rgba(234, 179, 8, 0.1) 100%)', border: '1px solid var(--gold-primary)', borderRadius: '12px', boxShadow: 'var(--shadow-glow)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <Sparkles size={20} className="gold-text" />
                 <span style={{ fontSize: '0.75rem', color: 'var(--gold-primary)', fontWeight: 700, letterSpacing: '0.05em' }}>PERSONALIZED MATCH VERDICT</span>
               </div>
 
-              <h3 style={{ fontSize: '1.4rem', margin: '4px 0 10px 0' }}>
+              <h3 style={{ fontSize: '1.4rem', margin: '4px 0 10px 0', color: 'var(--text-primary)' }}>
                 Perfect Match: <span className="gold-text">{wizardMatch.brandName}</span>
               </h3>
 
@@ -1094,7 +1094,7 @@ export const ChitPlanner: React.FC<ChitPlannerProps> = ({ retail }) => {
                 )}
               </p>
 
-              <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              <div style={{ padding: '12px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Scheme Mode:</span>
                   <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{wizardMatch.type === 'weight' ? 'Weight-Lock Accumulation' : 'Cash + Bonus Credit'}</span>

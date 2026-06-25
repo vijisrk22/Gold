@@ -155,7 +155,7 @@ export default function App() {
       {data && <StockMarketTicker market={data.market} />}
 
       {/* Header Area */}
-      <header style={{ borderBottom: '1px solid var(--border-color)', padding: '16px 24px', background: 'rgba(7, 10, 19, 0.4)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
+      <header className="dark-header" style={{ borderBottom: '1px solid var(--border-color)', padding: '16px 24px', background: 'rgba(45, 26, 17, 0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

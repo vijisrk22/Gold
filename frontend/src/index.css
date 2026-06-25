@@ -320,3 +320,21 @@ h1, h2, h3, h4, h5, h6 {
 .goog-te-menu-value span:nth-child(3) {
   border: none !important;
 }
+
+/* Force bright text in dark background headers regardless of theme */
+.dark-header {
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: rgba(253, 224, 71, 0.15);
+  color: var(--text-primary);
+}
+.dark-header select, .dark-header option {
+  color: var(--text-primary) !important;
+}
+.dark-header option {
+  background-color: rgba(45, 26, 17, 0.95) !important;
+}
+.dark-header button.glass-panel {
+  color: var(--text-primary) !important;
+}
