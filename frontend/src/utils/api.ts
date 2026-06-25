@@ -305,6 +305,60 @@ export const getFallbackRates = (location?: string, overrides?: ManualOverrides)
 
   const cityNameFormatted = city.charAt(0).toUpperCase() + city.slice(1);
 
+  const goldChange = -0.31;
+  const silverChange = 0.48;
+  const rupeeChange = 0.05;
+
+  const explanation = `Price movement is primarily driven by global markets today. Spot gold traded lower by ${Math.abs(goldChange).toFixed(2)}% amid macroeconomic shifts, while the USD/INR remained relatively stable.`;
+  const sentiment = 'Bearish';
+
+  const news = [
+    {
+      title: "Gold Pulls Back as Investors Lock in Profits",
+      source: "Aurum Live Research",
+      time: "2 hours ago",
+      snippet: `Spot gold (XAU/USD) traded around $${spotGold.toFixed(2)} per ounce, registering a ${goldChange.toFixed(2)}% daily change as traders analyze global economic indicators.`
+    },
+    {
+      title: `Rupee Trades at ${usdInr.toFixed(3)} as Oil Prices and DXY Shift`,
+      source: "Forex Live India",
+      time: "4 hours ago",
+      snippet: `The Indian currency moved by ${rupeeChange.toFixed(2)}% against the greenback today, directly adjusting the landing import price of yellow metals across Indian refineries.`
+    },
+    {
+      title: "Silver ETF Holdings Jump Amid Industrial Demand",
+      source: "Commodity Watch",
+      time: "6 hours ago",
+      snippet: `Silver BeES and physical silver retail rates saw action. Local silver prices are holding at elevated levels with a daily change of ${silverChange.toFixed(2)}%.`
+    }
+  ];
+
+  const predictions = {
+    gold: {
+      current: base22k,
+      pred1mo: Math.round(base22k * (1 + 0.008)),
+      pred1y: Math.round(base22k * (1 + 0.095)),
+      change1mo: 0.8,
+      change1y: 9.5,
+      rationale: "Supported by consistent domestic Rupee depreciation and long-term wedding season jewelry demand."
+    },
+    silver: {
+      current: silver,
+      pred1mo: Math.round(silver * (1 + 0.012)),
+      pred1y: Math.round(silver * (1 + 0.115)),
+      change1mo: 1.2,
+      change1y: 11.5,
+      rationale: "Driven by green energy transition industrial usage (solar panels, electronics) outpacing supply growth."
+    }
+  };
+
+  const insights = {
+    explanation,
+    sentiment,
+    news,
+    predictions
+  };
+
   return {
     market: {
       spotGold: { price: spotGold, change: -12.4, changePercent: -0.31, currency: 'USD', symbol: 'GC=F' },
@@ -353,6 +407,7 @@ export const getFallbackRates = (location?: string, overrides?: ManualOverrides)
       },
       brands
     },
+    insights,
     meta: {
       serverTime: new Date().toISOString(),
       apiVersion: '1.0.0-fallback'
