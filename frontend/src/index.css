@@ -338,3 +338,41 @@ h1, h2, h3, h4, h5, h6 {
 .dark-header button.glass-panel {
   color: var(--text-primary) !important;
 }
+
+/* Header Responsiveness */
+.header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.header-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    justify-content: center;
+    text-align: center;
+  }
+  .header-logo-section {
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .header-controls {
+    justify-content: center;
+    width: 100%;
+  }
+}

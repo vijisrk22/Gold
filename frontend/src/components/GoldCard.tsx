@@ -40,7 +40,7 @@ export const GoldCard: React.FC<GoldCardProps> = ({
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', minHeight: '220px' }}>
+    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
@@ -99,22 +99,7 @@ export const GoldCard: React.FC<GoldCardProps> = ({
         )}
       </div>
 
-      {/* Offsets (Footer Area) */}
-      <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px' }}>
-        {/* Premium Markup */}
-        <div>
-          {premium !== undefined && (
-            <span style={{ fontSize: '0.75rem', color: premium > 0 ? 'var(--gold-primary)' : 'var(--color-up)', background: 'rgba(255,255,255,0.03)', padding: '4px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)', fontWeight: 500 }}>
-              {premium > 0 ? `Brand Premium: +₹${premium}/g` : 'Zero Markup rate'}
-            </span>
-          )}
-          {(isDubai || isUS) && (
-            <span className="live-badge" style={{ padding: '2px 8px', fontSize: '0.7rem' }}>
-              Global Feed
-            </span>
-          )}
-        </div>
-      </div>
+
     </div>
   );
 };

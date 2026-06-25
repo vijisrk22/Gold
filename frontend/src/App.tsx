@@ -156,9 +156,9 @@ export default function App() {
 
       {/* Header Area */}
       <header className="dark-header" style={{ borderBottom: '1px solid var(--border-color)', padding: '16px 24px', background: 'rgba(45, 26, 17, 0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div className="header-container">
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="header-logo-section">
             <div style={{ background: 'var(--gold-glow)', padding: '8px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
               <Coins className="gold-text" size={24} />
             </div>
@@ -172,7 +172,7 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="header-controls">
             <GoogleTranslateWidget />
             {/* Location Selector Dropdown */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px 12px' }}>
