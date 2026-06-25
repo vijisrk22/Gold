@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Multi-platform Gold Rate tracking fullstack application",
   "scripts": {
-    "install-all": "npm install && npm install --prefix server && npm install --prefix frontend",
+    "install-all": "npm install && npm install --prefix frontend",
     "dev": "node dev.js",
-    "build-frontend": "npm run build --prefix frontend",
+    "build-frontend": "npm install --prefix frontend && npm run build --prefix frontend",
     "start": "node server/index.js",
     "cap-init": "npx cap init",
     "mobile-prepare": "npm run build-frontend && npx cap sync"
@@ -21,6 +21,8 @@
   "license": "ISC",
   "dependencies": {
     "@capacitor/cli": "^6.2.0",
-    "@capacitor/core": "^6.2.0"
+    "@capacitor/core": "^6.2.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
   }
 }
