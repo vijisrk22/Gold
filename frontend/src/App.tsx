@@ -11,14 +11,7 @@ import {
   Info,
   MapPin,
   Bell,
-  Activity,
-  Calendar, 
-  TrendingUp, 
-  TrendingDown, 
-  Search, 
-  Maximize2, 
-  Settings, 
-  Filter 
+  Activity
 } from 'lucide-react';
 import { SplashScreen } from './components/SplashScreen';
 import { fetchGoldRates, getSavedOverrides } from './utils/api';
