@@ -256,10 +256,10 @@ app.get('/api/rates', async (req, res) => {
   const brands = {
     tanishq: {
       name: 'Tanishq (Tata)',
-      gold24k: base24k + 95,
-      gold22k: base22k + 90,
-      gold18k: base18k + 75,
-      premium: 90,
+      gold24k: base24k + 39,
+      gold22k: base22k + 45,
+      gold18k: base18k + 30,
+      premium: 45,
       description: 'Premium branding and certified purity (Tata group)'
     },
     grt: {
@@ -272,10 +272,10 @@ app.get('/api/rates', async (req, res) => {
     },
     lalitha: {
       name: 'Lalitha Jewellery',
-      gold24k: base24k, // exact same base rate
-      gold22k: base22k,
-      gold18k: base18k,
-      premium: 0,
+      gold24k: base24k - 5,
+      gold22k: base22k - 5,
+      gold18k: base18k - 4,
+      premium: -5,
       description: 'Known for wholesale pricing and lowest making charges'
     },
     atr: {
