@@ -469,13 +469,12 @@ export const fetchGoldRates = async (location?: string): Promise<GoldRatesPayloa
 
   const getApiUrl = () => {
     let baseUrl = '/api/rates';
-    if (window.location.port === '5173') {
-      baseUrl = 'http://localhost:5000/api/rates';
-    } else if (
-      (window.location.origin.includes('localhost') && window.location.port !== '5000') ||
-      window.location.protocol === 'file:'
-    ) {
-      baseUrl = 'https://goldrate.azurewebsites.net/api/rates';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      if (window.location.port !== '5000') {
+        baseUrl = 'http://localhost:5000/api/rates';
+      }
+    } else if (window.location.protocol === 'file:') {
+      baseUrl = 'https://maatal.com/api/rates';
     }
     return location ? `${baseUrl}?location=${encodeURIComponent(location)}` : baseUrl;
   };
@@ -539,13 +538,12 @@ export interface HistoricalRate {
 export const fetchHistoricalRates = async (range: '1mo' | '1y'): Promise<HistoricalRate[]> => {
   const getApiUrl = () => {
     let baseUrl = '/api/history';
-    if (window.location.port === '5173') {
-      baseUrl = 'http://localhost:5000/api/history';
-    } else if (
-      (window.location.origin.includes('localhost') && window.location.port !== '5000') ||
-      window.location.protocol === 'file:'
-    ) {
-      baseUrl = 'https://goldrate.azurewebsites.net/api/history';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      if (window.location.port !== '5000') {
+        baseUrl = 'http://localhost:5000/api/history';
+      }
+    } else if (window.location.protocol === 'file:') {
+      baseUrl = 'https://maatal.com/api/history';
     }
     return `${baseUrl}?range=${range}`;
   };
