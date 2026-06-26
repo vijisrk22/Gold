@@ -129,7 +129,18 @@ export const SearchIndexHub: React.FC = () => {
 
         {/* Index Search Cloud & Macro Trends */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
+          {/* Visually hidden for customers but kept in DOM for SEO/GEO crawlers */}
+          <div style={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: 0,
+            margin: '-1px',
+            overflow: 'hidden',
+            clip: 'rect(0, 0, 0, 0)',
+            whiteSpace: 'nowrap',
+            border: 0
+          }}>
             <h3 style={{ fontSize: '1rem', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-primary)' }}>
               <Search size={16} className="gold-text" /> Index Keywords & Search Queries
             </h3>
@@ -156,19 +167,7 @@ export const SearchIndexHub: React.FC = () => {
                     color: 'var(--text-secondary)', 
                     padding: '4px 8px', 
                     borderRadius: '6px', 
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    transition: 'all 0.2s',
-                    cursor: 'default'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--gold-primary)';
-                    e.currentTarget.style.borderColor = 'var(--gold-primary)';
-                    e.currentTarget.style.background = 'var(--gold-glow)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--text-secondary)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                    border: '1px solid rgba(255, 255, 255, 0.05)'
                   }}
                 >
                   #{tag}
