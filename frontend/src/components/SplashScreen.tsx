@@ -11,12 +11,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     // Show splash for 6 seconds, then start fade out
     const timer = setTimeout(() => {
       setIsFadingOut(true);
-      // Wait for fade out animation to finish before unmounting
       setTimeout(onComplete, 800); 
     }, 6000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
+
+  // Generate 24 deterministic stars for the explosion/sparkle effect
+  const stars = Array.from({ length: 24 }).map((_, i) => {
+    const angle = i * 15; // 360 / 24
+    const distance = 70 + (i % 4) * 35; // Distances: 70, 105, 140, 175
+    const delay = (i % 6) * 0.3;
+    const duration = 1.5 + (i % 3) * 0.5;
+    const size = 3 + (i % 3) * 2; // Sizes: 3px, 5px, 7px
+    
+    return { id: i, angle, distance, delay, duration, size };
+  });
 
   return (
     <div style={{
@@ -46,13 +56,63 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       }} />
 
       <div style={{
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '40px',
+        justifyContent: 'center',
         animation: 'slide-up-fade 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards'
       }}>
+        
+        {/* Sparkling Stars Container */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}>
+          {stars.map((star) => (
+            <div 
+              key={star.id} 
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+                backgroundColor: '#ffd700',
+                borderRadius: '50%',
+                boxShadow: '0 0 10px 2px rgba(255, 215, 0, 0.8)',
+                transform: 'translate(-50%, -50%)',
+                // Custom CSS variables for the keyframes
+                '--angle': `${star.angle}deg`,
+                '--distance': `${star.distance}px`,
+                animation: `shoot-star ${star.duration}s cubic-bezier(0.25, 1, 0.5, 1) ${star.delay}s infinite`
+              } as React.CSSProperties}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#fff',
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)',
+                animation: `twinkle ${star.duration * 0.8}s ease-in-out ${star.delay}s infinite alternate`
+              }} />
+            </div>
+          ))}
+        </div>
+
+        {/* Logo Text */}
         <h1 style={{
+          position: 'relative',
+          zIndex: 1,
           fontSize: '4rem',
           fontWeight: 900,
           letterSpacing: '-1px',
@@ -61,85 +121,51 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           margin: 0,
+          padding: '20px',
           animation: 'shine 3s linear infinite',
           filter: 'drop-shadow(0 4px 12px rgba(255, 215, 0, 0.15))'
         }}>
           Maatal.com
         </h1>
-
-        {/* Modern Orbital Spinner */}
-        <div style={{ position: 'relative', width: '64px', height: '64px' }}>
-          <div className="orbit orbit-1" />
-          <div className="orbit orbit-2" />
-          <div className="orbit orbit-3" />
-          {/* Inner core */}
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '12px',
-            height: '12px',
-            backgroundColor: '#ffd700',
-            borderRadius: '50%',
-            boxShadow: '0 0 15px 4px rgba(255, 215, 0, 0.4)',
-            animation: 'core-pulse 2s ease-in-out infinite'
-          }} />
-        </div>
       </div>
 
       <style>{`
-        .orbit {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          border: 2px solid transparent;
+        @keyframes shoot-star {
+          0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0);
+          }
+          20% {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--distance) * -0.5)) scale(1.2);
+          }
+          80% {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--distance) * -0.9)) scale(0.8);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(0);
+          }
         }
-        .orbit-1 {
-          border-top-color: #ffd700;
-          animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-        }
-        .orbit-2 {
-          border-right-color: rgba(255, 215, 0, 0.6);
-          border-bottom-color: rgba(255, 215, 0, 0.6);
-          width: 80%;
-          height: 80%;
-          top: 10%;
-          left: 10%;
-          animation: spin-reverse 2s linear infinite;
-        }
-        .orbit-3 {
-          border-left-color: rgba(255, 215, 0, 0.3);
-          width: 60%;
-          height: 60%;
-          top: 20%;
-          left: 20%;
-          animation: spin 3s ease-in-out infinite;
+        
+        @keyframes twinkle {
+          0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.5); box-shadow: 0 0 5px #ffd700; }
+          100% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); box-shadow: 0 0 20px 5px #fff; }
         }
 
         @keyframes shine {
           to { background-position: 200% center; }
         }
+        
         @keyframes slide-up-fade {
           0% { opacity: 0; transform: translateY(30px) scale(0.95); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes spin { 
-          to { transform: rotate(360deg); } 
-        }
-        @keyframes spin-reverse { 
-          to { transform: rotate(-360deg); } 
-        }
+        
         @keyframes ambient-pulse {
           0% { transform: scale(1); opacity: 0.5; }
           100% { transform: scale(1.1); opacity: 0.8; }
-        }
-        @keyframes core-pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-          50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
         }
       `}</style>
     </div>
