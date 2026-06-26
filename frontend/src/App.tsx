@@ -159,11 +159,12 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'center', alignItems: 'center', background: '#070a13', color: '#fff', gap: '16px' }}>
-        <div style={{ width: '40px', height: '40px', border: '3px solid var(--border-color)', borderTopColor: 'var(--gold-primary)', borderRadius: '50%', animation: 'float 1s infinite linear' }}></div>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }} className="gold-text">Synchronizing Gold Exchanges...</h2>
-        <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Fetching live rates and scrapers...</p>
-      </div>
+      <>
+        {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--bg-main)' }}>
+          {!showSplash && <div style={{ width: '40px', height: '40px', border: '3px solid var(--border-color)', borderTopColor: 'var(--gold-primary)', borderRadius: '50%', animation: 'spin 1s infinite linear' }}></div>}
+        </div>
+      </>
     );
   }
 
