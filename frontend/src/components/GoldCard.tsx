@@ -3,7 +3,6 @@ import { Landmark, Award, MapPin, DollarSign } from 'lucide-react';
 
 interface GoldCardProps {
   title: string;
-  description: string;
   gold22k: number | null;
   gold24k: number | null;
   gold18k?: number | null;
@@ -18,7 +17,6 @@ interface GoldCardProps {
 
 export const GoldCard: React.FC<GoldCardProps> = ({
   title,
-  description,
   gold22k,
   gold24k,
   gold18k,
@@ -39,15 +37,14 @@ export const GoldCard: React.FC<GoldCardProps> = ({
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div className="glass-panel" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h3 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
             {isDubai ? <MapPin size={18} className="gold-text" /> : isUS ? <DollarSign size={18} className="gold-text" /> : <Landmark size={18} className="gold-text" />}
             {title}
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '2px' }}>{description}</p>
         </div>
         {badge && (
           <span className="live-badge" style={{ backgroundColor: 'var(--gold-glow)', color: 'var(--gold-primary)', borderColor: 'var(--border-color)' }}>

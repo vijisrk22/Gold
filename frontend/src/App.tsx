@@ -419,7 +419,6 @@ export default function App() {
                     <GoldCard 
                       key={key}
                       title={brand.name}
-                      description={brand.description}
                       gold22k={brand.gold22k}
                       gold24k={brand.gold24k}
                       gold18k={brand.gold18k}
@@ -432,7 +431,6 @@ export default function App() {
                 {/* Dubai Gold Rate Card */}
                 <GoldCard 
                   title="Dubai Retail Standard"
-                  description="Tax-free retail rates in Dubai (DGJG association)"
                   gold22k={data.retail.dubai.gold22k_aed}
                   gold24k={data.retail.dubai.gold24k_aed}
                   currency="AED"
@@ -444,7 +442,6 @@ export default function App() {
                 {/* US Spot Gold Card */}
                 <GoldCard 
                   title="US Commodity Spot"
-                  description="Official Spot Exchange Rate (COMEX XAU/USD)"
                   gold22k={data.retail.us.usd.gold22k}
                   gold24k={data.retail.us.usd.gold24k}
                   currency="USD"
