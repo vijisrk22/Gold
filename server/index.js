@@ -301,10 +301,10 @@ function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kal
   const allBrands = {
     tanishq: {
       name: 'Tanishq (Tata)',
-      gold24k: base24k + 45,
-      gold22k: base22k + 45,
-      gold18k: base18k + 35,
-      premium: 45,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Premium branding and certified purity (Tata group)'
     },
     grt: {
@@ -341,74 +341,74 @@ function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kal
     },
     joyalukkas: {
       name: 'Joyalukkas',
-      gold24k: base24k + 20,
-      gold22k: base22k + 20,
-      gold18k: base18k + 15,
-      premium: 20,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'World-renowned collections and global standard retail rate'
     },
     avr: {
       name: 'AVR Swarna Mahal',
-      gold24k: base24k + 5,
-      gold22k: base22k + 5,
-      gold18k: base18k + 4,
-      premium: 5,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Regional brand popular in Tamil Nadu for high-finish details'
     },
     tbz: {
       name: 'TBZ - Tribhovandas Bhimji Zaveri',
-      gold24k: base24k + 35,
-      gold22k: base22k + 35,
-      gold18k: base18k + 26,
-      premium: 35,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Iconic heritage brand of Western India famous for premium designs'
     },
     waman: {
       name: 'Waman Hari Pethe',
-      gold24k: base24k + 10,
-      gold22k: base22k + 10,
-      gold18k: base18k + 8,
-      premium: 10,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Trusted Maharashtrian brand celebrating traditional jewelry'
     },
     pcj: {
       name: 'PC Jeweller',
-      gold24k: base24k + 20,
-      gold22k: base22k + 20,
-      gold18k: base18k + 15,
-      premium: 20,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Popular national chain offering contemporary and classic items'
     },
     senco: {
       name: 'Senco Gold & Diamonds',
-      gold24k: base24k + 15,
-      gold22k: base22k + 15,
-      gold18k: base18k + 11,
-      premium: 15,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Bengal heritage lightweight jewelry specialists with nation-wide outlets'
     },
     pcc: {
       name: 'PC Chandra Jewellers',
-      gold24k: base24k + 25,
-      gold22k: base22k + 25,
-      gold18k: base18k + 19,
-      premium: 25,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Prestigious Eastern India group known for heavy designer sets'
     },
     bhima: {
       name: 'Bhima Jewellers',
-      gold24k: base24k + 10,
-      gold22k: base22k + 10,
-      gold18k: base18k + 8,
-      premium: 10,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Kerala pioneer brand since 1925 with trusted purity standards'
     },
     ckc: {
       name: 'C. Krishniah Chetty (CKC)',
-      gold24k: base24k + 40,
-      gold22k: base22k + 40,
-      gold18k: base18k + 30,
-      premium: 40,
+      gold24k: null,
+      gold22k: null,
+      gold18k: null,
+      premium: null,
       description: 'Elite royal heritage jeweler of South India offering top luxury'
     },
     thangamayil: {
