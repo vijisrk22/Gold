@@ -141,16 +141,10 @@ async function scrapeMalabarRates() {
   if (!html) return null;
   
   try {
-    const $ = cheerio.load(html);
-    const rawRateText = $('#livegoldrate .sc-eeFpNe.bBellx').text();
-    // rawRateText looks like "₹" "13,195.00" "/" => "₹13,195.00/"
-    const cleanRateMatch = rawRateText.replace(/,/g, '').match(/\d+(\.\d+)?/);
-    if (cleanRateMatch) {
-      const gold22k = Math.round(parseFloat(cleanRateMatch[0]));
-      const gold24k = Math.round(gold22k * (24 / 22));
-      const gold18k = Math.round(gold22k * (18 / 22));
-      return { gold24k, gold22k, gold18k };
-    }
+    // Malabar uses a React Client-Side rendered app. 
+    // The price is not available in the initial HTML payload.
+    // Returning null to gracefully degrade to N/A.
+    return null;
   } catch (error) {
     console.error('Failed to parse Malabar rates:', error.message);
   }
@@ -331,10 +325,10 @@ function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kal
     },
     malabar: {
       name: 'Malabar Gold & Diamonds',
-      gold24k: malabarDirect ? malabarDirect.gold24k : base24k + 15,
-      gold22k: malabarDirect ? malabarDirect.gold22k : base22k + 15,
-      gold18k: malabarDirect ? malabarDirect.gold18k : base18k + 10,
-      premium: malabarDirect ? (malabarDirect.gold22k - base22k) : 15,
+      gold24k: malabarDirect ? malabarDirect.gold24k : null,
+      gold22k: malabarDirect ? malabarDirect.gold22k : null,
+      gold18k: malabarDirect ? malabarDirect.gold18k : null,
+      premium: malabarDirect ? (malabarDirect.gold22k - base22k) : null,
       description: 'Responsible sourcing and certified 916 purity assurances'
     },
     kalyan: {
