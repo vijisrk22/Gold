@@ -339,10 +339,10 @@ function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kal
     },
     kalyan: {
       name: 'Kalyan Jewellers',
-      gold24k: base24k + 25,
-      gold22k: base22k + 25,
-      gold18k: base18k + 20,
-      premium: 25,
+      gold24k: kalyanDirect ? kalyanDirect.gold24k : base24k + 25,
+      gold22k: kalyanDirect ? kalyanDirect.gold22k : base22k + 25,
+      gold18k: kalyanDirect ? kalyanDirect.gold18k : base18k + 20,
+      premium: kalyanDirect ? (kalyanDirect.gold22k - base22k) : 25,
       description: 'National presence with designer and bridal collections'
     },
     joyalukkas: {
