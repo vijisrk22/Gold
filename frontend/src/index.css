@@ -62,7 +62,10 @@
 html, body {
   max-width: 100vw;
   overflow-x: hidden;
-  touch-action: pan-x pan-y;
+  touch-action: manipulation; /* Prevents double-tap zoom */
+  overscroll-behavior-y: none; /* Prevents pull-to-refresh */
+  -webkit-touch-callout: none; /* Disable iOS callout */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
 }
 
 /* Suppress Google Translate Top Banner - AGGRESSIVE */
