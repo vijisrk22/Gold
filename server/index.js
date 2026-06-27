@@ -134,6 +134,29 @@ async function scrapeLalithaRates() {
   return null;
 }
 
+// Scrape Malabar Gold & Diamonds rates
+async function scrapeMalabarRates() {
+  const url = 'https://www.malabargoldanddiamonds.com/in/pan-india/en/product-list.html';
+  const html = await fetchHtml(url);
+  if (!html) return null;
+  
+  try {
+    const $ = cheerio.load(html);
+    const rawRateText = $('#livegoldrate .sc-eeFpNe.bBellx').text();
+    // rawRateText looks like "₹" "13,195.00" "/" => "₹13,195.00/"
+    const cleanRateMatch = rawRateText.replace(/,/g, '').match(/\d+(\.\d+)?/);
+    if (cleanRateMatch) {
+      const gold22k = Math.round(parseFloat(cleanRateMatch[0]));
+      const gold24k = Math.round(gold22k * (24 / 22));
+      const gold18k = Math.round(gold22k * (18 / 22));
+      return { gold24k, gold22k, gold18k };
+    }
+  } catch (error) {
+    console.error('Failed to parse Malabar rates:', error.message);
+  }
+  return null;
+}
+
 // Scrape Gold rates for a specific city from GoodReturns
 async function scrapeCityRates(city) {
   const url = `https://www.goodreturns.in/gold-rates/${city}.html`;
@@ -280,7 +303,7 @@ function calculateRatesFromSpot(spotUsd, usdInr, usdAed) {
   };
 }
 
-function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kalyanDirect, lalithaDirect) {
+function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kalyanDirect, lalithaDirect, malabarDirect) {
   const allBrands = {
     tanishq: {
       name: 'Tanishq (Tata)',
@@ -308,10 +331,10 @@ function getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kal
     },
     malabar: {
       name: 'Malabar Gold & Diamonds',
-      gold24k: base24k + 15,
-      gold22k: base22k + 15,
-      gold18k: base18k + 10,
-      premium: 15,
+      gold24k: malabarDirect ? malabarDirect.gold24k : base24k + 15,
+      gold22k: malabarDirect ? malabarDirect.gold22k : base22k + 15,
+      gold18k: malabarDirect ? malabarDirect.gold18k : base18k + 10,
+      premium: malabarDirect ? (malabarDirect.gold22k - base22k) : 15,
       description: 'Responsible sourcing and certified 916 purity assurances'
     },
     kalyan: {
@@ -538,11 +561,12 @@ app.get('/api/rates', async (req, res) => {
 
   // 2. Attempt scraping
   const isChennai = city === 'chennai';
-  const [grtDirect, mangalDirect, kalyanDirect, lalithaDirect, cityScraped, dubaiScraped, silverScraped] = await Promise.all([
+  const [grtDirect, mangalDirect, kalyanDirect, lalithaDirect, malabarDirect, cityScraped, dubaiScraped, silverScraped] = await Promise.all([
     isChennai ? scrapeGrtRates() : Promise.resolve(null),
     scrapeMangalRates(),
     scrapeKalyanRates(),
     scrapeLalithaRates(),
+    scrapeMalabarRates(),
     scrapeCityRates(city),
     scrapeDubaiRates(),
     scrapeCitySilverRate(city)
@@ -573,7 +597,7 @@ app.get('/api/rates', async (req, res) => {
   const base24k = finalCity.gold24k;
   const base18k = finalCity.gold18k;
 
-  const brands = getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kalyanDirect, lalithaDirect);
+  const brands = getBrandsForLocation(city, base24k, base22k, base18k, mangalDirect, kalyanDirect, lalithaDirect, malabarDirect);
 
   // 4. US Gold rates
   const usGrams24k = parseFloat((spotPrice / 31.1034768).toFixed(2));
