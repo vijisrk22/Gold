@@ -4,9 +4,9 @@ import { Landmark, Award, MapPin, DollarSign } from 'lucide-react';
 interface GoldCardProps {
   title: string;
   description: string;
-  gold22k: number;
-  gold24k: number;
-  gold18k?: number;
+  gold22k: number | null;
+  gold24k: number | null;
+  gold18k?: number | null;
   currency: string;
   badge?: string;
   sparklineData?: number[];
@@ -30,7 +30,8 @@ export const GoldCard: React.FC<GoldCardProps> = ({
   isUS = false,
 }) => {
   // Format local currency representation
-  const formatCurrency = (val: number, cur: string) => {
+  const formatCurrency = (val: number | null | undefined, cur: string) => {
+    if (val === null || val === undefined) return 'N/A';
     if (cur === 'INR') return `₹${val.toLocaleString()}`;
     if (cur === 'AED') return `${val.toFixed(2)} AED`;
     if (cur === 'USD') return `$${val.toFixed(2)}`;
