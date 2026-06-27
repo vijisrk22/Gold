@@ -12,7 +12,11 @@ export const Calculator: React.FC<CalculatorProps> = ({ retail }) => {
   const [makingChargesPct, setMakingChargesPct] = useState<number>(12); // standard 12% making charges
   const [caratType, setCaratType] = useState<'22k' | '24k' | '18k'>('22k');
 
-  const brandKeys = Object.keys(retail.brands);
+  const brandKeys = Object.keys(retail.brands).filter(key => {
+    const b = retail.brands[key];
+    const r = caratType === '22k' ? b.gold22k : caratType === '24k' ? b.gold24k : b.gold18k;
+    return r !== null && r !== undefined && r > 0;
+  });
 
   // Automatically reset selectedBrand if the current selection is not available for this city
   React.useEffect(() => {
@@ -23,11 +27,11 @@ export const Calculator: React.FC<CalculatorProps> = ({ retail }) => {
   
   // Calculate specific billing for selected brand
   const currentBrand = retail.brands[selectedBrand] || retail.brands[brandKeys[0]] || { name: 'Retail Brand', gold24k: 0, gold22k: 0, gold18k: 0, premium: 0 };
-  const ratePerGram = caratType === '22k' 
+  const ratePerGram = (caratType === '22k' 
     ? currentBrand.gold22k 
     : caratType === '24k' 
       ? currentBrand.gold24k 
-      : currentBrand.gold18k;
+      : currentBrand.gold18k) || 0;
 
   const basePrice = ratePerGram * weight;
   const makingCharges = basePrice * (makingChargesPct / 100);
@@ -36,13 +40,14 @@ export const Calculator: React.FC<CalculatorProps> = ({ retail }) => {
   const grandTotal = subtotal + gst;
 
   // Comparison list for all brands
-  const comparisonList = brandKeys.map(key => {
-    const brand = retail.brands[key];
-    const rate = caratType === '22k' 
-      ? brand.gold22k 
-      : caratType === '24k' 
-        ? brand.gold24k 
-        : brand.gold18k;
+  const comparisonList = brandKeys
+    .map(key => {
+      const brand = retail.brands[key];
+      const rate = (caratType === '22k' 
+        ? brand.gold22k 
+        : caratType === '24k' 
+          ? brand.gold24k 
+          : brand.gold18k) || 0;
     
     // Different brand default making charges (Tanishq: 14%, Kalyan: 12%, Lalitha: 6% wastage, others 10%)
     let defaultPct = 10;
